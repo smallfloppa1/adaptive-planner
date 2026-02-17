@@ -1,0 +1,63 @@
+package com.floppahost.adaptiveplanner.domain.service;
+
+
+import com.floppahost.adaptiveplanner.domain.model.Exam;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Calculates academic pressure based on upcoming exams.
+ * Pressure formula: (difficulty * importance) / max(days_left, 1)
+ */
+public class PressureService {
+
+    /**
+     * Calculate pressure for a single exam.
+     * Past exams return 0.0 pressure.
+     * 
+     * @param today Current date
+     * @param exam The exam to calculate pressure for
+     * @return Pressure value (0.0 or positive)
+     */
+    public double calculateExamPressure(LocalDate today, Exam exam) {
+        LocalDate examDate = exam.getStartsAt()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate();
+        
+        long daysLeft = ChronoUnit.DAYS.between(today, examDate);
+        
+        if (daysLeft < 0) {
+            return 0.0;
+        }
+        
+        return (exam.getDifficulty() * exam.getImportance()) / (double) Math.max(daysLeft, 1);
+    }
+
+    /**
+     * Build a map of subject pressure values by aggregating exam pressures.
+     * Only includes upcoming exams with positive pressure.
+     * 
+     * @param today Current date
+     * @param exams List of exams to consider
+     * @return Map of subject ID to total pressure
+     */
+    public Map<UUID, Double> buildSubjectPressure(LocalDate today, List<Exam> exams) {
+        Map<UUID, Double> pressures = new HashMap<>();
+        
+        for (Exam exam : exams) {
+            double pressure = calculateExamPressure(today, exam);
+            
+            if (pressure > 0) {
+                pressures.merge(exam.getSubjectId(), pressure, Double::sum);
+            }
+        }
+        
+        return pressures;
+    }
+}

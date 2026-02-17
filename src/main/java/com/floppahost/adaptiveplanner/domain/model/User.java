@@ -1,0 +1,25 @@
+package com.floppahost.adaptiveplanner.domain.model;
+
+import com.floppahost.adaptiveplanner.domain.value.Email;
+import lombok.Builder;
+import lombok.Value;
+import lombok.With;
+
+import java.time.Instant;
+import java.util.UUID;
+
+/**
+ * Identity/account entity.
+ */
+@Value
+@Builder
+@With
+public class User {
+    @Builder.Default
+    UUID id = UUID.randomUUID();
+
+    Email email;
+
+    @Builder.Default
+    boolean active = true;
+}
