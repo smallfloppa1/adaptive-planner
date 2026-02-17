@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.With;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Value
@@ -13,7 +13,7 @@ import java.util.UUID;
 public class Exam {
     UUID userId;
     UUID subjectId;
-    Instant startsAt;
+    LocalDateTime startsAt;
 
     @Builder.Default
     UUID id = UUID.randomUUID();
@@ -30,7 +30,7 @@ public class Exam {
     public Exam(
             UUID userId,
             UUID subjectId,
-            Instant startsAt,
+            LocalDateTime startsAt,
             UUID id,
             int difficulty,
             int importance,

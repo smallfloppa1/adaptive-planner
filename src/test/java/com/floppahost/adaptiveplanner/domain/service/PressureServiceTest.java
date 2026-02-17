@@ -5,9 +5,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,7 +37,7 @@ class PressureServiceTest {
     @DisplayName("Should calculate pressure for exam in 1 day")
     void shouldCalculatePressureForExamInOneDay() {
         // Given
-        Exam exam = createExam(mathSubjectId, today.plusDays(1), 5, 5);
+        Exam exam = createExam(mathSubjectId, today.plusDays(1), LocalTime.of(8, 30), 5, 5);
 
         // When
         double pressure = pressureService.calculateExamPressure(today, exam);
@@ -50,7 +50,7 @@ class PressureServiceTest {
     @DisplayName("Should calculate pressure for exam in 7 days")
     void shouldCalculatePressureForExamInSevenDays() {
         // Given
-        Exam exam = createExam(mathSubjectId, today.plusDays(7), 5, 5);
+        Exam exam = createExam(mathSubjectId, today.plusDays(7), LocalTime.of(8, 30), 5, 5);
 
         // When
         double pressure = pressureService.calculateExamPressure(today, exam);
@@ -63,7 +63,7 @@ class PressureServiceTest {
     @DisplayName("Should return zero pressure for past exams")
     void shouldReturnZeroForPastExams() {
         // Given
-        Exam pastExam = createExam(mathSubjectId, today.minusDays(5), 5, 5);
+        Exam pastExam = createExam(mathSubjectId, today.minusDays(5), LocalTime.of(8, 30), 5, 5);
 
         // When
         double pressure = pressureService.calculateExamPressure(today, pastExam);
@@ -76,7 +76,7 @@ class PressureServiceTest {
     @DisplayName("Should return zero pressure for exam today that already passed")
     void shouldReturnZeroForExamToday() {
         // Given - Exam is today but time has passed
-        Exam examToday = createExam(mathSubjectId, today.minusDays(1), 5, 5);
+        Exam examToday = createExam(mathSubjectId, today.minusDays(1), LocalTime.of(8, 30), 5, 5);
 
         // When
         double pressure = pressureService.calculateExamPressure(today, examToday);
@@ -89,8 +89,8 @@ class PressureServiceTest {
     @DisplayName("Should calculate higher pressure for difficult/important exams")
     void shouldCalculateHigherPressureForDifficultExams() {
         // Given
-        Exam easyExam = createExam(mathSubjectId, today.plusDays(7), 1, 1);
-        Exam hardExam = createExam(mathSubjectId, today.plusDays(7), 5, 5);
+        Exam easyExam = createExam(mathSubjectId, today.plusDays(7), LocalTime.of(8, 30), 1, 1);
+        Exam hardExam = createExam(mathSubjectId, today.plusDays(7), LocalTime.of(10, 15), 5, 5);
 
         // When
         double easyPressure = pressureService.calculateExamPressure(today, easyExam);
@@ -107,9 +107,9 @@ class PressureServiceTest {
     void shouldAggregatePressureBySubject() {
         // Given - Multiple exams for same subject
         List<Exam> exams = List.of(
-            createExam(mathSubjectId, today.plusDays(3), 4, 5),   // pressure = 20/3 = 6.67
-            createExam(mathSubjectId, today.plusDays(7), 3, 3),   // pressure = 9/7 = 1.29
-            createExam(physicsSubjectId, today.plusDays(5), 5, 4) // pressure = 20/5 = 4.0
+                createExam(mathSubjectId, today.plusDays(3), LocalTime.of(8, 30), 4, 5),   // pressure = 20/3 = 6.67
+                createExam(mathSubjectId, today.plusDays(7), LocalTime.of(10, 15), 3, 3),   // pressure = 9/7 = 1.29
+                createExam(physicsSubjectId, today.plusDays(5), LocalTime.of(12, 15), 5, 4) // pressure = 20/5 = 4.0
         );
 
         // When
@@ -118,9 +118,9 @@ class PressureServiceTest {
         // Then
         assertThat(subjectPressure).hasSize(2);
         assertThat(subjectPressure.get(mathSubjectId))
-            .isCloseTo(7.952, within(0.001)); // 6.67 + 1.29
+                .isCloseTo(7.952, within(0.001)); // 6.67 + 1.29
         assertThat(subjectPressure.get(physicsSubjectId))
-            .isCloseTo(4.0, within(0.001));
+                .isCloseTo(4.0, within(0.001));
     }
 
     @Test
@@ -128,9 +128,9 @@ class PressureServiceTest {
     void shouldExcludePastExamsFromSubjectPressure() {
         // Given
         List<Exam> exams = List.of(
-            createExam(mathSubjectId, today.plusDays(3), 5, 5),   // Future - included
-            createExam(mathSubjectId, today.minusDays(2), 5, 5),  // Past - excluded
-            createExam(physicsSubjectId, today.minusDays(7), 5, 5) // Past - excluded
+                createExam(mathSubjectId, today.plusDays(3), LocalTime.of(8, 30), 5, 5),   // Future - included
+                createExam(mathSubjectId, today.minusDays(2), LocalTime.of(10, 15), 5, 5),  // Past - excluded
+                createExam(physicsSubjectId, today.minusDays(7), LocalTime.of(12, 15), 5, 5) // Past - excluded
         );
 
         // When
@@ -147,8 +147,8 @@ class PressureServiceTest {
     void shouldReturnEmptyMapWhenNoUpcomingExams() {
         // Given - Only past exams
         List<Exam> exams = List.of(
-            createExam(mathSubjectId, today.minusDays(5), 5, 5),
-            createExam(physicsSubjectId, today.minusDays(10), 5, 5)
+                createExam(mathSubjectId, today.minusDays(5), LocalTime.of(8, 30), 5, 5),
+                createExam(physicsSubjectId, today.minusDays(10), LocalTime.of(10, 15), 5, 5)
         );
 
         // When
@@ -175,7 +175,7 @@ class PressureServiceTest {
     @DisplayName("Should calculate pressure correctly for exam on same day in future")
     void shouldCalculatePressureForSameDayFutureExam() {
         // Given - Exam is today (0 days left)
-        Exam examToday = createExam(mathSubjectId, today, 5, 5);
+        Exam examToday = createExam(mathSubjectId, today, LocalTime.of(8, 30), 5, 5);
 
         // When
         double pressure = pressureService.calculateExamPressure(today, examToday);
@@ -189,31 +189,31 @@ class PressureServiceTest {
     void shouldHandleMultipleExamsOnDifferentDays() {
         // Given
         List<Exam> exams = List.of(
-            createExam(mathSubjectId, today.plusDays(1), 5, 5),   // Very urgent
-            createExam(mathSubjectId, today.plusDays(14), 3, 3),  // Less urgent
-            createExam(mathSubjectId, today.plusDays(30), 2, 2)   // Least urgent
+                createExam(mathSubjectId, today.plusDays(1), LocalTime.of(8, 30), 5, 5),   // Very urgent
+                createExam(mathSubjectId, today.plusDays(14), LocalTime.of(10, 15), 3, 3),  // Less urgent
+                createExam(mathSubjectId, today.plusDays(30), LocalTime.of(12, 15), 2, 2)   // Least urgent
         );
 
         // When
         Map<UUID, Double> subjectPressure = pressureService.buildSubjectPressure(today, exams);
 
         // Then - Should sum all pressures
-        double expectedPressure = 
-            (5.0 * 5.0) +      // 25.0
-            (3.0 * 3.0 / 14.0) +     // 0.643
-            (2.0 * 2.0 / 30.0);      // 0.133
+        double expectedPressure =
+                (5.0 * 5.0) +      // 25.0
+                        (3.0 * 3.0 / 14.0) +     // 0.643
+                        (2.0 * 2.0 / 30.0);      // 0.133
 
         assertThat(subjectPressure.get(mathSubjectId))
-            .isCloseTo(expectedPressure, within(0.001));
+                .isCloseTo(expectedPressure, within(0.001));
     }
 
     @Test
     @DisplayName("Should calculate different pressures for different difficulty levels")
     void shouldCalculateDifferentPressuresForDifficultyLevels() {
         // Given - Same days left, same importance, different difficulty
-        Exam difficulty1 = createExam(mathSubjectId, today.plusDays(5), 1, 5);
-        Exam difficulty3 = createExam(mathSubjectId, today.plusDays(5), 3, 5);
-        Exam difficulty5 = createExam(mathSubjectId, today.plusDays(5), 5, 5);
+        Exam difficulty1 = createExam(mathSubjectId, today.plusDays(5), LocalTime.of(8, 30), 1, 5);
+        Exam difficulty3 = createExam(mathSubjectId, today.plusDays(5), LocalTime.of(10, 15), 3, 5);
+        Exam difficulty5 = createExam(mathSubjectId, today.plusDays(5), LocalTime.of(12, 15), 5, 5);
 
         // When
         double pressure1 = pressureService.calculateExamPressure(today, difficulty1);
@@ -232,9 +232,9 @@ class PressureServiceTest {
     @DisplayName("Should calculate different pressures for different importance levels")
     void shouldCalculateDifferentPressuresForImportanceLevels() {
         // Given - Same days left, same difficulty, different importance
-        Exam importance1 = createExam(mathSubjectId, today.plusDays(5), 5, 1);
-        Exam importance3 = createExam(mathSubjectId, today.plusDays(5), 5, 3);
-        Exam importance5 = createExam(mathSubjectId, today.plusDays(5), 5, 5);
+        Exam importance1 = createExam(mathSubjectId, today.plusDays(5), LocalTime.of(8, 30), 5, 1);
+        Exam importance3 = createExam(mathSubjectId, today.plusDays(5), LocalTime.of(10, 15), 5, 3);
+        Exam importance5 = createExam(mathSubjectId, today.plusDays(5), LocalTime.of(12, 15), 5, 5);
 
         // When
         double pressure1 = pressureService.calculateExamPressure(today, importance1);
@@ -249,16 +249,13 @@ class PressureServiceTest {
         assertThat(pressure3).isGreaterThan(pressure1);
     }
 
-    // Helper method
-    private Exam createExam(UUID subjectId, LocalDate examDate, int difficulty, int importance) {
-        Instant examInstant = examDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
-        
+    private Exam createExam(UUID subjectId, LocalDate examDate, LocalTime time, int difficulty, int importance) {
         return Exam.builder()
-            .userId(userId)
-            .subjectId(subjectId)
-            .startsAt(examInstant)
-            .difficulty(difficulty)
-            .importance(importance)
-            .build();
+                .userId(userId)
+                .subjectId(subjectId)
+                .startsAt(LocalDateTime.of(examDate, time))
+                .difficulty(difficulty)
+                .importance(importance)
+                .build();
     }
 }
