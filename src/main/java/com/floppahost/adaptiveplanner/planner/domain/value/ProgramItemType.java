@@ -5,6 +5,5 @@ public enum ProgramItemType {
     READING,
     EXERCISE,
     PROJECT,
-    QUIZ,
     OTHER
 }

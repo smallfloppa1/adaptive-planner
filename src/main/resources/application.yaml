@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: adaptive-planner
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/adaptiveplanner
+    username: postgres
+    password: postgres
+
+telegram:
+  bot:
+    api-key: ${TELEGRAM_BOT_API_KEY}
+    username: ${TELEGRAM_BOT_USERNAME}

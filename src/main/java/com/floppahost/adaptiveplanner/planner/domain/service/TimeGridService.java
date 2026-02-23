@@ -1,7 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.domain.service;
 
 import com.floppahost.adaptiveplanner.planner.domain.dto.TimeGridResult;
-import com.floppahost.adaptiveplanner.domain.model.*;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.BlockRef;
 import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;

@@ -30,6 +30,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.flywaydb:flyway-database-postgresql")
+
+    implementation("org.telegram:telegrambots-springboot-longpolling-starter:9.3.0")
+    implementation("org.telegram:telegrambots-client:9.3.0")
+
+    implementation(platform("me.paulschwarz:spring-dotenv-bom:5.1.0"))
+    developmentOnly("me.paulschwarz:springboot4-dotenv")
+
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
@@ -43,4 +50,6 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgs("-javaagent:${configurations.testRuntimeClasspath.get()
+        .find { it.name.contains("mockito-core") }?.absolutePath}")
 }
