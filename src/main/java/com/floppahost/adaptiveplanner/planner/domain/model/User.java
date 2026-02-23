@@ -7,9 +7,7 @@ import lombok.With;
 
 import java.util.UUID;
 
-/**
- * Identity/account entity.
- */
+
 @Value
 @Builder
 @With
@@ -21,4 +19,8 @@ public class User {
 
     @Builder.Default
     boolean active = true;
+
+    public static User createNew() {
+        return User.builder().build();
+    }
 }

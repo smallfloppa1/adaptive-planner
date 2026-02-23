@@ -6,12 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.UUID;
+
 
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "telegram_user")
-@EntityListeners(AuditingEntityListener.class)
+@Table(name = "telegram_users")
 public class TelegramUserEntity extends AuditableEntity {
 
     @Id
@@ -24,8 +25,12 @@ public class TelegramUserEntity extends AuditableEntity {
     @Column(nullable = false)
     private Long chatId;
 
-    public TelegramUserEntity(Long telegramUserId, Long chatId) {
+    @Column(nullable = false, unique = true)
+    private UUID domainId;
+
+    public TelegramUserEntity(Long telegramUserId, Long chatId, UUID domainId) {
         this.telegramUserId = telegramUserId;
         this.chatId = chatId;
+        this.domainId = domainId;
     }
 }

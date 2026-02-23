@@ -6,7 +6,9 @@ import java.util.regex.Pattern;
  * Email value object with validation.
  * Ensures email addresses are well-formed and non-empty.
  */
-public record Email(String value) {
+public record Email(
+        String value
+) {
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
             "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
     );

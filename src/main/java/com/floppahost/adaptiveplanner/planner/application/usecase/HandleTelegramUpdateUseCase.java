@@ -5,14 +5,18 @@ import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletel
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingText;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.TelegramUserRegistry;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.dto.TelegramUserDto;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.userrepository.UserRepository;
+import com.floppahost.adaptiveplanner.planner.domain.model.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
 
-    private final TelegramUserRegistry userRegistry;
+    private final TelegramUserRegistry telegramUserRegistry;
+    private final UserRepository domainUserRepository;
 
     @Override
     public OutgoingText handle(IncomingText input) {
@@ -37,15 +41,24 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
 
         long telegramUserId = input.userId();
 
-        boolean alreadyRegistered = userRegistry.findByTelegramUserId(telegramUserId).isPresent();
-        if (alreadyRegistered) {
+        boolean isAlreadyRegistered = telegramUserRegistry.findByTelegramUserId(telegramUserId).isPresent();
+        if (isAlreadyRegistered) {
             return new OutgoingText(input.chatId(), "You're already registered");
         }
 
-        userRegistry.save(new TelegramUserDto(
-                telegramUserId,
-                input.chatId()
-        ));
+        User newUser = User.createNew();
+        domainUserRepository.save(newUser);
+
+        try {
+            telegramUserRegistry.save(new TelegramUserDto(
+                    telegramUserId,
+                    input.chatId(),
+                    newUser.getId()
+            ));
+        } catch (DataIntegrityViolationException e) {
+            domainUserRepository.deleteById(newUser.getId());
+            return new OutgoingText(input.chatId(), "You're already registered");
+        }
 
         return new OutgoingText(input.chatId(), "Registered ✅");
     }

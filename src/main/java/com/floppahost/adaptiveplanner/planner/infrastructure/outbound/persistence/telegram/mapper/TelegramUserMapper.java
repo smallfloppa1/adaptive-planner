@@ -10,7 +10,8 @@ public final class TelegramUserMapper {
 
         return new TelegramUserEntity(
                 dto.telegramUserId(),
-                dto.chatId()
+                dto.chatId(),
+                dto.domainUserId()
         );
     }
 
@@ -19,7 +20,8 @@ public final class TelegramUserMapper {
 
         return new TelegramUserDto(
                 entity.getTelegramUserId(),
-                entity.getChatId()
+                entity.getChatId(),
+                entity.getDomainId()
         );
     }
 }
