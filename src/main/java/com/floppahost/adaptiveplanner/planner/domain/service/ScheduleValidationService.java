@@ -31,8 +31,8 @@ public class ScheduleValidationService {
     );
 
     public void validateDayPlan(UserProfile profile, DayPlan plan) {
-        LocalDateTime windowStart = LocalDateTime.of(plan.getDay(), profile.getWakeTime());
-        LocalDateTime windowEnd = LocalDateTime.of(plan.getDay(), profile.getSleepTime());
+        LocalDateTime windowStart = LocalDateTime.of(plan.getDay(), profile.wakeTime());
+        LocalDateTime windowEnd = LocalDateTime.of(plan.getDay(), profile.sleepTime());
 
         // Optional: support sleep after midnight
         if (windowEnd.isBefore(windowStart)) {
@@ -72,11 +72,11 @@ public class ScheduleValidationService {
             prevEnd = block.getEndsAt();
         }
 
-        if (heavyCount > profile.getMaxHeavyBlocksPerDay()) {
+        if (heavyCount > profile.maxHeavyBlocksPerDay()) {
             throw new PlanValidationException("Exceeded max heavy blocks per day.");
         }
 
-        if (flexMinutes > profile.getMaxTotalPlannedMinutesPerDay()) {
+        if (flexMinutes > profile.maxTotalPlannedMinutesPerDay()) {
             throw new PlanValidationException("Exceeded max flexible planned minutes per day.");
         }
     }

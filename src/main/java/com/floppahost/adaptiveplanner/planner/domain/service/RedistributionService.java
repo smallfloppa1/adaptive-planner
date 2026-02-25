@@ -106,7 +106,7 @@ public class RedistributionService {
             int targetForDay = base + (i < remainder ? 1 : 0);
             targetForDay = Math.min(
                     targetForDay,
-                    profile.getMaxTotalPlannedMinutesPerDay()
+                    profile.maxTotalPlannedMinutesPerDay()
             );
 
             PlanInputs inputs = new PlanInputs(

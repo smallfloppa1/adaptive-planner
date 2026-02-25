@@ -58,10 +58,10 @@ public class BlockAllocationService {
         int usedFlexMinutes = 0;
         int heavyBlocksUsed = 0;
 
-        int focusMinutes = profile.getFocusMinutes();
-        int breakMinutes = profile.getBreakMinutes();
-        int flexCap = profile.getMaxTotalPlannedMinutesPerDay();
-        int maxHeavy = profile.getMaxHeavyBlocksPerDay();
+        int focusMinutes = profile.focusMinutes();
+        int breakMinutes = profile.breakMinutes();
+        int flexCap = profile.maxTotalPlannedMinutesPerDay();
+        int maxHeavy = profile.maxHeavyBlocksPerDay();
 
         int target = Math.min(targetStudyMinutes, flexCap);
 

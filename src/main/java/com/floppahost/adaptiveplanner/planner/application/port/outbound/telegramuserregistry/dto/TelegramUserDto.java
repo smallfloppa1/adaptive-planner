@@ -3,8 +3,8 @@ package com.floppahost.adaptiveplanner.planner.application.port.outbound.telegra
 import java.util.UUID;
 
 public record TelegramUserDto(
+        UUID userId,
         long telegramUserId,
-        long chatId,
-        UUID domainUserId
+        long chatId
 ) {
 }

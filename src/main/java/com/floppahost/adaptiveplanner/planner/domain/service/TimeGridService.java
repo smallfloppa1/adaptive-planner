@@ -28,8 +28,8 @@ public class TimeGridService {
      * Build the day window (wake time to sleep time) for a given day.
      */
     public Slot buildDayWindow(UserProfile profile, LocalDate day) {
-        LocalDateTime start = LocalDateTime.of(day, profile.getWakeTime());
-        LocalDateTime end = LocalDateTime.of(day, profile.getSleepTime());
+        LocalDateTime start = LocalDateTime.of(day, profile.wakeTime());
+        LocalDateTime end = LocalDateTime.of(day, profile.sleepTime());
         return new Slot(start, end);
     }
 

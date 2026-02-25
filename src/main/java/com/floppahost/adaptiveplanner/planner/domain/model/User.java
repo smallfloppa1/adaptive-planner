@@ -11,14 +11,14 @@ import java.util.UUID;
 public final class User {
 
     private final UUID id;
-    private Email email; // nullable by domain decision
-    private boolean active;
+    private Email email;
+    private boolean isActive;
     private UserProfile profile;
 
-    private User(UUID id, Email email, boolean active, UserProfile profile) {
+    private User(UUID id, Email email, boolean isActive, UserProfile profile) {
         this.id = Objects.requireNonNull(id, "id");
         this.email = email; // nullable
-        this.active = active;
+        this.isActive = isActive;
         this.profile = Objects.requireNonNull(profile, "profile");
     }
 
@@ -35,16 +35,30 @@ public final class User {
         return registerNew(null);
     }
 
-    // For persistence mapping only.
-    public static User rehydrate(UUID id, Email email, boolean active, UserProfile profile) {
-        return new User(id, email, active, profile);
+    public static User rehydrate(
+            UUID id,
+            Email email,
+            boolean isActive,
+            UserProfile profile
+    ) {
+        return new User(id, email, isActive, profile);
     }
 
-    public UUID id() { return id; }
-    public Email email() { return email; }
-    public boolean hasEmail() { return email != null; }
-    public boolean isActive() { return active; }
-    public UserProfile profile() { return profile; }
+    public UUID id() {
+        return id;
+    }
+
+    public Email email() {
+        return email;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public UserProfile profile() {
+        return profile;
+    }
 
     public void setEmail(Email newEmail) {
         ensureActive();
@@ -57,11 +71,11 @@ public final class User {
     }
 
     public void deactivate() {
-        this.active = false;
+        this.isActive = false;
     }
 
     public void reactivate() {
-        this.active = true;
+        this.isActive = true;
     }
 
     public void updateSleepWindow(
@@ -78,10 +92,12 @@ public final class User {
         this.profile = this.profile.withFocusCycle(focusMinutes, breakMinutes);
     }
 
-    public void updatePlanningConstraints(int maxHeavyBlocksPerDay,
-                                          int maxTotalPlannedMinutesPerDay,
-                                          int weeklyStudyTargetMinutes,
-                                          boolean strictEnforcement) {
+    public void updatePlanningConstraints(
+            int maxHeavyBlocksPerDay,
+            int maxTotalPlannedMinutesPerDay,
+            int weeklyStudyTargetMinutes,
+            boolean strictEnforcement
+    ) {
         ensureActive();
         this.profile = this.profile.withPlanningConstraints(
                 maxHeavyBlocksPerDay,
@@ -91,15 +107,8 @@ public final class User {
         );
     }
 
-    public void markProfileSetupCompleted() {
-        ensureActive();
-        this.profile = this.profile.markSetupCompleted();
-    }
-
-    /* -------------------- Guard -------------------- */
-
     private void ensureActive() {
-        if (!active) {
+        if (!isActive) {
             throw new IllegalStateException("User is inactive.");
         }
     }
