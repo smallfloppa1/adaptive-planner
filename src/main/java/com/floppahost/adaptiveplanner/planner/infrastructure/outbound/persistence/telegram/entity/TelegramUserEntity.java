@@ -4,7 +4,6 @@ import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistenc
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.UUID;
 
@@ -26,11 +25,11 @@ public class TelegramUserEntity extends AuditableEntity {
     private Long chatId;
 
     @Column(nullable = false, unique = true)
-    private UUID domainId;
+    private UUID userId;
 
-    public TelegramUserEntity(Long telegramUserId, Long chatId, UUID domainId) {
+    public TelegramUserEntity(Long telegramUserId, Long chatId, UUID userId) {
         this.telegramUserId = telegramUserId;
         this.chatId = chatId;
-        this.domainId = domainId;
+        this.userId = userId;
     }
 }

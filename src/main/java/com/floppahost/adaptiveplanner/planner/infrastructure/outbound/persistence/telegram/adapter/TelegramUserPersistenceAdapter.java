@@ -1,6 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.telegram.adapter;
 
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.TelegramUserRegistry;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.TelegramUserRepository;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.dto.TelegramUserDto;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.telegram.entity.TelegramUserEntity;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.telegram.mapper.TelegramUserMapper;
@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class TelegramUserPersistenceAdapter implements TelegramUserRegistry {
+public class TelegramUserPersistenceAdapter implements TelegramUserRepository {
 
     private final TelegramUserJpaRepository repository;
 
@@ -30,5 +30,10 @@ public class TelegramUserPersistenceAdapter implements TelegramUserRegistry {
         TelegramUserEntity saved = repository.save(entity);
 
         return TelegramUserMapper.toDto(saved);
+    }
+
+    @Override
+    public boolean isPresentByTelegramUserId(long telegramUserId) {
+        return repository.existsByTelegramUserId((telegramUserId));
     }
 }

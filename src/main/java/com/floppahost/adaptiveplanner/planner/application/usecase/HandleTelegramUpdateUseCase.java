@@ -3,7 +3,7 @@ package com.floppahost.adaptiveplanner.planner.application.usecase;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.HandleTelegramUpdate;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingText;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingText;
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.TelegramUserRegistry;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.TelegramUserRepository;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.dto.TelegramUserDto;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.userrepository.UserRepository;
 import com.floppahost.adaptiveplanner.planner.domain.model.User;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
 
-    private final TelegramUserRegistry telegramUserRegistry;
+    private final TelegramUserRepository telegramUserRepository;
     private final UserRepository domainUserRepository;
 
     @Override
@@ -41,22 +41,23 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
 
         long telegramUserId = input.userId();
 
-        boolean isAlreadyRegistered = telegramUserRegistry.findByTelegramUserId(telegramUserId).isPresent();
+        boolean isAlreadyRegistered = telegramUserRepository.isPresentByTelegramUserId(telegramUserId);
         if (isAlreadyRegistered) {
             return new OutgoingText(input.chatId(), "You're already registered");
         }
 
-        User newUser = User.createNew();
+        User newUser = User.registerWithoutEmail();
+
         domainUserRepository.save(newUser);
 
         try {
-            telegramUserRegistry.save(new TelegramUserDto(
+            telegramUserRepository.save(new TelegramUserDto(
+                    newUser.id(),
                     telegramUserId,
-                    input.chatId(),
-                    newUser.getId()
+                    input.chatId()
             ));
         } catch (DataIntegrityViolationException e) {
-            domainUserRepository.deleteById(newUser.getId());
+            domainUserRepository.deleteById(newUser.id());
             return new OutgoingText(input.chatId(), "You're already registered");
         }
 

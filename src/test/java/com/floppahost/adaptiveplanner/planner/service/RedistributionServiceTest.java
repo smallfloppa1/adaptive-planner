@@ -4,7 +4,7 @@ import com.floppahost.adaptiveplanner.planner.domain.dto.RedistributionResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.DayPlan;
 import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.model.UserProfile;
+import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import com.floppahost.adaptiveplanner.planner.domain.service.PlanningEngine;
 import com.floppahost.adaptiveplanner.planner.domain.service.RedistributionService;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;

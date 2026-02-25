@@ -7,6 +7,7 @@ import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistenc
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.user.repository.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +25,7 @@ public class UserPersistenceAdapter implements UserRepository {
     }
 
     @Override
+    @Transactional
     public User save(User user) {
         UserEntity entity = UserMapper.toEntity(user);
         UserEntity saved = repository.save(entity);
@@ -31,6 +33,7 @@ public class UserPersistenceAdapter implements UserRepository {
     }
 
     @Override
+    @Transactional
     public void deleteById(UUID id) {
         repository.deleteById(id);
     }

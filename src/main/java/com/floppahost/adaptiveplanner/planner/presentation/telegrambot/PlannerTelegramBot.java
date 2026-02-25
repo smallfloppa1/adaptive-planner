@@ -4,6 +4,7 @@ import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletel
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingText;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingText;
 import com.floppahost.adaptiveplanner.planner.presentation.telegrambot.config.TelegramBotProperties;
+import com.floppahost.adaptiveplanner.planner.presentation.telegrambot.mapper.UpdateMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

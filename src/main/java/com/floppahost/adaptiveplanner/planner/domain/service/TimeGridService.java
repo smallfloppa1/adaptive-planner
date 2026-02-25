@@ -4,7 +4,7 @@ import com.floppahost.adaptiveplanner.planner.domain.dto.TimeGridResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.BlockRef;
 import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.model.UserProfile;
+import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.value.FixedEventKind;
 import com.floppahost.adaptiveplanner.planner.domain.value.Slot;
@@ -28,8 +28,8 @@ public class TimeGridService {
      * Build the day window (wake time to sleep time) for a given day.
      */
     public Slot buildDayWindow(UserProfile profile, LocalDate day) {
-        LocalDateTime start = LocalDateTime.of(day, profile.getWakeTime());
-        LocalDateTime end = LocalDateTime.of(day, profile.getSleepTime());
+        LocalDateTime start = LocalDateTime.of(day, profile.wakeTime());
+        LocalDateTime end = LocalDateTime.of(day, profile.sleepTime());
         return new Slot(start, end);
     }
 
