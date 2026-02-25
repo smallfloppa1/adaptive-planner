@@ -1,6 +1,7 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.user.entity;
 
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.common.AuditableEntity;
+import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.userprofile.entity.UserProfileEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,4 +24,16 @@ public class UserEntity extends AuditableEntity {
 
     @Column(nullable = false)
     private boolean isActive;
+
+    @OneToOne(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private UserProfileEntity profile;
+
+    public void setProfile(UserProfileEntity profile) {
+        this.profile = profile;
+        if (profile != null) profile.setUser(this);
+    }
 }

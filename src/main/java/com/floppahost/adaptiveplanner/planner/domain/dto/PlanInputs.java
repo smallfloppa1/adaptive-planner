@@ -1,7 +1,7 @@
 package com.floppahost.adaptiveplanner.planner.domain.dto;
 
 import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.model.UserProfile;
+import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 
 import java.time.LocalDate;
 import java.util.List;

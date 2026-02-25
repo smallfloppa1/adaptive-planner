@@ -3,7 +3,7 @@ package com.floppahost.adaptiveplanner.planner.service;
 import com.floppahost.adaptiveplanner.planner.domain.exception.PlanValidationException;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.DayPlan;
-import com.floppahost.adaptiveplanner.planner.domain.model.UserProfile;
+import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import com.floppahost.adaptiveplanner.planner.domain.service.ScheduleValidationService;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
 import org.junit.jupiter.api.BeforeEach;

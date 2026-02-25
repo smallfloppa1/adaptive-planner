@@ -1,4 +1,4 @@
-package com.floppahost.adaptiveplanner.planner.presentation.telegrambot;
+package com.floppahost.adaptiveplanner.planner.presentation.telegrambot.mapper;
 
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingText;
 import org.telegram.telegrambots.meta.api.objects.Update;
