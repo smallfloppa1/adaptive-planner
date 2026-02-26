@@ -1,4 +1,4 @@
-package com.floppahost.adaptiveplanner.planner.service;
+package com.floppahost.adaptiveplanner.planner.domain.service;
 
 import com.floppahost.adaptiveplanner.planner.domain.dto.RedistributionResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
@@ -40,15 +40,17 @@ class RedistributionServiceTest {
         userId = UUID.randomUUID();
         monday = LocalDate.of(2024, 2, 19); // Monday
 
-        profile = UserProfile.builder()
-                .id(userId)
-                .wakeTime(LocalTime.of(7, 0))
-                .sleepTime(LocalTime.of(23, 0))
-                .focusMinutes(40)
-                .breakMinutes(10)
-                .maxHeavyBlocksPerDay(6)
-                .maxTotalPlannedMinutesPerDay(480)
-                .build();
+        profile = new UserProfile(
+                LocalTime.of(7, 0),
+                LocalTime.of(23, 0),
+                7.0,
+                40,
+                10,
+                6,
+                8 * 60,
+                10 * 60,
+                true
+        );
     }
 
     @Test
@@ -199,7 +201,12 @@ class RedistributionServiceTest {
     @DisplayName("Should cap daily target at profile maximum")
     void shouldCapDailyTarget() {
         LocalDate thursday = monday.plusDays(3);
-        UserProfile limited = profile.withMaxTotalPlannedMinutesPerDay(100);
+        UserProfile limited = profile.withPlanningConstraints(
+                profile.maxHeavyBlocksPerDay(),
+                100,
+                profile.weeklyStudyTargetMinutes(),
+                profile.strictEnforcement()
+        );
 
         Map<LocalDate, DayPlan> existingPlans = Map.of(
                 monday, createPlanWithStudyMinutes(monday, 50)

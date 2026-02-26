@@ -1,4 +1,4 @@
-package com.floppahost.adaptiveplanner.planner.service;
+package com.floppahost.adaptiveplanner.planner.domain.service;
 
 import com.floppahost.adaptiveplanner.planner.domain.exception.PlanValidationException;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
@@ -24,24 +24,24 @@ class ScheduleValidationServiceTest {
     private UserProfile profile;
     private UUID userId;
     private LocalDate testDay;
-    private ZoneId timezone;
 
     @BeforeEach
     void setUp() {
         validator = new ScheduleValidationService();
         userId = UUID.randomUUID();
         testDay = LocalDate.of(2024, 2, 19);
-        timezone = ZoneId.of("Europe/Warsaw");
 
-        profile = UserProfile.builder()
-            .id(userId)
-            .wakeTime(LocalTime.of(7, 0))
-            .sleepTime(LocalTime.of(23, 0))
-            .focusMinutes(40)
-            .breakMinutes(10)
-            .maxHeavyBlocksPerDay(3)
-            .maxTotalPlannedMinutesPerDay(300)
-            .build();
+        profile = new UserProfile(
+                LocalTime.of(7, 0),
+                LocalTime.of(23, 0),
+                7.0,
+                40,
+                10,
+                3,
+                5 * 60,
+                10 * 60,
+                true
+        );
     }
 
     @Test

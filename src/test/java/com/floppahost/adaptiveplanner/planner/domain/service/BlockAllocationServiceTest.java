@@ -1,4 +1,4 @@
-package com.floppahost.adaptiveplanner.planner.service;
+package com.floppahost.adaptiveplanner.planner.domain.service;
 
 import com.floppahost.adaptiveplanner.planner.domain.dto.AllocationResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
@@ -34,15 +34,17 @@ class BlockAllocationServiceTest {
         testDay = LocalDate.of(2024, 2, 19);
         timezone = ZoneId.of("Europe/Warsaw");
 
-        profile = UserProfile.builder()
-            .id(userId)
-            .wakeTime(LocalTime.of(7, 0))
-            .sleepTime(LocalTime.of(23, 0))
-            .focusMinutes(40)
-            .breakMinutes(10)
-            .maxHeavyBlocksPerDay(6)
-            .maxTotalPlannedMinutesPerDay(480)
-            .build();
+        profile = new UserProfile(
+                LocalTime.of(7, 0),
+                LocalTime.of(23, 0),
+                7.0,
+                40,
+                10,
+                6,
+                8 * 60,
+                10 * 60,
+                true
+        );
     }
 
     @Test
@@ -77,7 +79,13 @@ class BlockAllocationServiceTest {
     @DisplayName("Should respect max heavy blocks limit")
     void shouldRespectMaxHeavyBlocksLimit() {
         // Given
-        UserProfile limitedProfile = profile.withMaxHeavyBlocksPerDay(2);
+        UserProfile limitedProfile = profile.withPlanningConstraints(
+                2,
+                profile.maxTotalPlannedMinutesPerDay(),
+                profile.weeklyStudyTargetMinutes(),
+                profile.strictEnforcement()
+        );
+
         List<Slot> freeSlots = List.of(
             createSlot(9, 0, 18, 0) // 9 hours available
         );
@@ -100,7 +108,12 @@ class BlockAllocationServiceTest {
     @DisplayName("Should respect max flexible minutes limit")
     void shouldRespectMaxFlexibleMinutesLimit() {
         // Given
-        UserProfile limitedProfile = profile.withMaxTotalPlannedMinutesPerDay(150);
+        UserProfile limitedProfile = profile.withPlanningConstraints(
+                profile.maxHeavyBlocksPerDay(),
+                150,
+                profile.weeklyStudyTargetMinutes(),
+                profile.strictEnforcement()
+        );
         List<Slot> freeSlots = List.of(
             createSlot(9, 0, 18, 0)
         );
@@ -227,7 +240,10 @@ class BlockAllocationServiceTest {
     @DisplayName("Should handle profile with zero break minutes")
     void shouldHandleZeroBreakMinutes() {
         // Given
-        UserProfile noBreakProfile = profile.withBreakMinutes(0);
+        UserProfile noBreakProfile = profile.withFocusCycle(
+                profile.focusMinutes(),
+                0
+        );
         List<Slot> freeSlots = List.of(
             createSlot(9, 0, 11, 0)
         );

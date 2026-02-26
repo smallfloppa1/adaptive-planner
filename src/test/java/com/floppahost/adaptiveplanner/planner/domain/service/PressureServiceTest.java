@@ -1,4 +1,4 @@
-package com.floppahost.adaptiveplanner.planner.service;
+package com.floppahost.adaptiveplanner.planner.domain.service;
 
 import com.floppahost.adaptiveplanner.planner.domain.model.Exam;
 import com.floppahost.adaptiveplanner.planner.domain.service.PressureService;

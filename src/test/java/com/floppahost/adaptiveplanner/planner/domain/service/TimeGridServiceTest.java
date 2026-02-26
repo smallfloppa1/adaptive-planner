@@ -1,4 +1,4 @@
-package com.floppahost.adaptiveplanner.planner.service;
+package com.floppahost.adaptiveplanner.planner.domain.service;
 
 import com.floppahost.adaptiveplanner.planner.domain.dto.TimeGridResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
@@ -36,11 +36,17 @@ class TimeGridServiceTest {
         userId = UUID.randomUUID();
         monday = LocalDate.of(2024, 2, 19);
 
-        profile = UserProfile.builder()
-                .id(userId)
-                .wakeTime(LocalTime.of(7, 0))
-                .sleepTime(LocalTime.of(23, 0))
-                .build();
+        profile = new UserProfile(
+                LocalTime.of(7, 0),
+                LocalTime.of(23, 0),
+                7.0,
+                40,
+                10,
+                6,
+                8 * 60,
+                10 * 60,
+                true
+        );
     }
 
     @Test

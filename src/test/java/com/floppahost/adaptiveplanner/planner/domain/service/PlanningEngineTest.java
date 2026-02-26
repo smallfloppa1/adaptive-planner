@@ -1,18 +1,10 @@
-package com.floppahost.adaptiveplanner.planner.service;
+package com.floppahost.adaptiveplanner.planner.domain.service;
 
 import com.floppahost.adaptiveplanner.planner.domain.dto.PlanInputs;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.DayPlan;
 import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
-import com.floppahost.adaptiveplanner.planner.domain.service.BlockAllocationService;
-import com.floppahost.adaptiveplanner.planner.domain.service.PlanningEngine;
-import com.floppahost.adaptiveplanner.planner.domain.service.ScheduleValidationService;
-import com.floppahost.adaptiveplanner.planner.domain.service.TimeGridService;
-import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
-import com.floppahost.adaptiveplanner.planner.domain.value.FixedEventKind;
-import com.floppahost.adaptiveplanner.planner.domain.value.TimeRange;
-import com.floppahost.adaptiveplanner.planner.domain.value.Weekday;
+import com.floppahost.adaptiveplanner.planner.domain.value.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,15 +43,17 @@ class PlanningEngineTest {
         monday = LocalDate.of(2024, 2, 19);
         defaultEventKind = FixedEventKind.OTHER;
 
-        profile = UserProfile.builder()
-                .id(userId)
-                .wakeTime(LocalTime.of(7, 0))
-                .sleepTime(LocalTime.of(23, 0))
-                .focusMinutes(40)
-                .breakMinutes(10)
-                .maxHeavyBlocksPerDay(6)
-                .maxTotalPlannedMinutesPerDay(480)
-                .build();
+        profile = new UserProfile(
+                LocalTime.of(7, 0),
+                LocalTime.of(23, 0),
+                7.0,
+                40,
+                10,
+                6,
+                8 * 60,
+                10 * 60,
+                true
+        );
     }
 
     @Test
@@ -227,8 +221,8 @@ class PlanningEngineTest {
                 });
 
         // and should be inside the planning window
-        LocalDateTime windowStart = LocalDateTime.of(monday, profile.getWakeTime());
-        LocalDateTime windowEnd = LocalDateTime.of(monday, profile.getSleepTime());
+        LocalDateTime windowStart = LocalDateTime.of(monday, profile.wakeTime());
+        LocalDateTime windowEnd = LocalDateTime.of(monday, profile.sleepTime());
 
         assertThat(plan.getBlocks())
                 .filteredOn(b -> b.getKind() == BlockKind.STUDY)
@@ -277,7 +271,12 @@ class PlanningEngineTest {
     @Test
     @DisplayName("Should respect max heavy blocks constraint")
     void shouldRespectMaxHeavyBlocks() {
-        UserProfile restrictive = profile.withMaxHeavyBlocksPerDay(2);
+        UserProfile restrictive = profile.withPlanningConstraints(
+                2,
+                profile.maxTotalPlannedMinutesPerDay(),
+                profile.weeklyStudyTargetMinutes(),
+                profile.strictEnforcement()
+        );
 
         PlanInputs inputs = new PlanInputs(
                 userId,
@@ -301,7 +300,12 @@ class PlanningEngineTest {
     @Test
     @DisplayName("Should respect max flexible minutes constraint")
     void shouldRespectMaxFlexibleMinutes() {
-        UserProfile restrictive = profile.withMaxTotalPlannedMinutesPerDay(100);
+        UserProfile restrictive = profile.withPlanningConstraints(
+                profile.maxHeavyBlocksPerDay(),
+                100,
+                profile.weeklyStudyTargetMinutes(),
+                profile.strictEnforcement()
+        );
 
         PlanInputs inputs = new PlanInputs(
                 userId,
