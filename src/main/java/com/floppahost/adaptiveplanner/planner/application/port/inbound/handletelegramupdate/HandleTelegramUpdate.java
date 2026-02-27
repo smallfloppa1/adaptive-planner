@@ -1,9 +1,9 @@
 package com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate;
 
-import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingText;
-import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingText;
+import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingUpdate;
+import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingResponse;
 
 @FunctionalInterface
 public interface HandleTelegramUpdate {
-    OutgoingText handle(IncomingText input);
+    OutgoingResponse handle(IncomingUpdate input);
 }

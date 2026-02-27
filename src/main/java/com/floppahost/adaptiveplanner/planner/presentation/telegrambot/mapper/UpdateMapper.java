@@ -1,22 +1,39 @@
 package com.floppahost.adaptiveplanner.planner.presentation.telegrambot.mapper;
 
-import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingText;
+import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingUpdate;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 public final class UpdateMapper {
 
-    private UpdateMapper() {
+    public static IncomingUpdate toIncomingUpdate(Update update) {
 
-    }
+        // Handle standard typed messages (e.g., "/start")
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            var message = update.getMessage();
+            Long userId = message.getFrom() != null ? message.getFrom().getId() : null;
 
-    public static IncomingText toIncomingText(Update update) {
-        if (update == null || !update.hasMessage()) return null;
+            return new IncomingUpdate(
+                    message.getChatId(),
+                    userId,
+                    message.getText(),
+                    message.getMessageId(),
+                    false
+            );
+        }
 
-        Message message = update.getMessage();
-        if (message == null || !message.hasText()) return null;
+        // Handle button clicks (Callback Queries)
+        if (update.hasCallbackQuery()) {
+            var query = update.getCallbackQuery();
 
-        Long userId = message.getFrom() == null ? null : message.getFrom().getId();
-        return new IncomingText(message.getChatId(), userId, message.getText());
+            return new IncomingUpdate(
+                    query.getMessage().getChatId(),
+                    query.getFrom().getId(),
+                    query.getData(),
+                    query.getMessage().getMessageId(),
+                    true
+            );
+        }
+
+        return null;
     }
 }

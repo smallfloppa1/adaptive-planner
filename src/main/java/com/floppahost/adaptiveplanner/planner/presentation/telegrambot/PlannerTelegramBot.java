@@ -1,10 +1,11 @@
 package com.floppahost.adaptiveplanner.planner.presentation.telegrambot;
 
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.HandleTelegramUpdate;
-import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingText;
-import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingText;
+import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingUpdate;
+import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingResponse;
 import com.floppahost.adaptiveplanner.planner.presentation.telegrambot.config.TelegramBotProperties;
 import com.floppahost.adaptiveplanner.planner.presentation.telegrambot.mapper.UpdateMapper;
+import com.floppahost.adaptiveplanner.planner.presentation.telegrambot.view.ProfileViewFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -26,6 +28,7 @@ public class PlannerTelegramBot implements SpringLongPollingBot, LongPollingSing
     private final TelegramBotProperties properties;
     private final HandleTelegramUpdate handler;
     private final TelegramClient telegramClient;
+    private final ProfileViewFactory profileViewFactory;
 
     @Override
     public String getBotToken() {
@@ -39,22 +42,22 @@ public class PlannerTelegramBot implements SpringLongPollingBot, LongPollingSing
 
     @Override
     public void consume(Update update) {
-        IncomingText input = UpdateMapper.toIncomingText(update);
+        IncomingUpdate input = UpdateMapper.toIncomingUpdate(update);
         if (input == null) return;
 
-        OutgoingText out = handler.handle(input);
+        OutgoingResponse out = handler.handle(input);
         if (out == null) return;
 
-        SendMessage msg = SendMessage.builder()
-                .chatId(Long.toString(out.chatId()))
-                .text(out.text())
-                .build();
+        // Use the factory to generate the UI based on the response
+        BotApiMethod<?> apiMethod = profileViewFactory.buildView(out);
 
-        try {
-            telegramClient.execute(msg);
-        } catch (TelegramApiException e) {
-            // log, don't crash polling thread
-            log.error("Failed to consume a Telegram message", e);
+        if (apiMethod != null) {
+            try {
+                // This executes either the SendMessage or EditMessageText!
+                telegramClient.execute(apiMethod);
+            } catch (TelegramApiException e) {
+                log.error("Failed to execute Telegram method", e);
+            }
         }
     }
 
