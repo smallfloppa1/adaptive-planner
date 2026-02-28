@@ -29,6 +29,9 @@ public enum BotRoute {
     MENU_FOCUS_BREAK("MENU_FOCUS"),
     MENU_CAPS_LIMITS("MENU_CAPS"),
     MENU_GOALS_RULES("MENU_GOALS"),
+    MENU_EDIT_HEAVY_CAP("MENU_EDIT_HCAP"),
+    MENU_EDIT_MAX_DAILY("MENU_EDIT_DMAX"),
+    MENU_EDIT_WEEKLY_TARGET("MENU_EDIT_WTAR"),
 
     // ==========================================
     // 4. ACTION PREFIXES (For dynamic payloads)

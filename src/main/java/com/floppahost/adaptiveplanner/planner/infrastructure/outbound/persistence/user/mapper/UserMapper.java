@@ -2,53 +2,40 @@ package com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persisten
 
 import com.floppahost.adaptiveplanner.planner.domain.model.User;
 import com.floppahost.adaptiveplanner.planner.domain.value.Email;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.user.entity.UserEntity;
-import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.userprofile.entity.UserProfileEntity;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.userprofile.mapper.UserProfileMapper;
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
-public final class UserMapper {
+@Mapper(componentModel = "spring", uses = {UserProfileMapper.class})
+public interface UserMapper {
 
-    public static UserEntity toEntity(User user) {
-        if (user == null) {
-            throw new IllegalArgumentException("User must not be null when mapping to UserEntity");
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    UserEntity toEntity(User user);
+
+    User toDomain(UserEntity entity);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    void updateEntityFromDomain(User user, @MappingTarget UserEntity entity);
+
+    @AfterMapping
+    default void establishBidirectionalLink(@MappingTarget UserEntity entity) {
+        if (entity.getProfile() != null) {
+            entity.getProfile().setUser(entity);
+            entity.getProfile().setId(entity.getId());
         }
-        if (user.id() == null) {
-            throw new IllegalArgumentException("Cannot map User to UserEntity: User.id must not be null");
-        }
-        if (user.profile() == null) {
-            throw new IllegalArgumentException("Cannot map User to UserEntity: User.profile must not be null");
-        }
-
-        String email = (user.email() == null) ? null : user.email().value();
-
-        UserProfileEntity userProfileEntity = UserProfileMapper.toEntity(user.profile());
-
-        UserEntity userEntity = new UserEntity(
-                user.id(),
-                email,
-                user.isActive()
-        );
-
-        userEntity.attachProfile(userProfileEntity);
-
-        return userEntity;
     }
 
-    public static User toDomain(UserEntity entity) {
-        if (entity == null) {
-            throw new IllegalArgumentException("UserEntity must not be null when mapping to User");
-        }
+    default String map(Email email) {
+        return email == null ? null : email.value();
+    }
 
-        Email email = (entity.getEmail() == null) ? null : new Email(entity.getEmail());
-
-        UserProfile userProfile = UserProfileMapper.toDomain(entity.getProfile());
-
-        return User.rehydrate(
-                entity.getId(),
-                email,
-                entity.isActive(),
-                userProfile
-        );
+    default Email map(String email) {
+        return email == null ? null : new Email(email);
     }
 }

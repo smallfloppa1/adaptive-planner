@@ -13,9 +13,10 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Getter
+@Setter
 @Entity
 @Table(name = "user_profiles")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class UserProfileEntity extends AuditableEntity {
 
     @Id
@@ -26,8 +27,6 @@ public class UserProfileEntity extends AuditableEntity {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
-
-    // Productivity limits
 
     @Column(nullable = false)
     private LocalTime wakeTime;
@@ -56,29 +55,4 @@ public class UserProfileEntity extends AuditableEntity {
     @Column(nullable = false)
     private boolean strictEnforcement;
 
-    public UserProfileEntity(
-            LocalTime wakeTime,
-            LocalTime sleepTime,
-            double minSleepHours,
-            int focusMinutes,
-            int breakMinutes,
-            int maxHeavyBlocksPerDay,
-            int maxTotalPlannedMinutesPerDay,
-            int weeklyStudyTargetMinutes,
-            boolean strictEnforcement
-    ) {
-        this.wakeTime = wakeTime;
-        this.sleepTime = sleepTime;
-        this.minSleepHours = minSleepHours;
-        this.focusMinutes = focusMinutes;
-        this.breakMinutes = breakMinutes;
-        this.maxHeavyBlocksPerDay = maxHeavyBlocksPerDay;
-        this.maxTotalPlannedMinutesPerDay = maxTotalPlannedMinutesPerDay;
-        this.weeklyStudyTargetMinutes = weeklyStudyTargetMinutes;
-        this.strictEnforcement = strictEnforcement;
-    }
-
-    public void attachTo(UserEntity user) {
-        this.user = Objects.requireNonNull(user, "UserProfileEntity.user must not be null");
-    }
 }

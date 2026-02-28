@@ -1,6 +1,6 @@
-package com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry;
+package com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository;
 
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.dto.TelegramUserDto;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto.TelegramUserDto;
 
 import java.util.Optional;
 

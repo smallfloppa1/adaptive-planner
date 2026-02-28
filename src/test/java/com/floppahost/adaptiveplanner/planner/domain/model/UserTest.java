@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,20 +38,6 @@ class UserTest {
         assertNull(userWithoutEmail.email());
         assertTrue(userWithoutEmail.isActive());
         assertNotNull(userWithoutEmail.profile());
-    }
-
-    @Test
-    @DisplayName("Should rehydrate a user from existing data")
-    void shouldRehydrateUserFromExistingData() {
-        UUID id = UUID.randomUUID();
-        Email email = new Email("rehydrated@example.com");
-        UserProfile profile = UserProfile.defaults();
-        User rehydratedUser = User.rehydrate(id, email, false, profile);
-
-        assertEquals(id, rehydratedUser.id());
-        assertEquals(email, rehydratedUser.email());
-        assertFalse(rehydratedUser.isActive());
-        assertEquals(profile, rehydratedUser.profile());
     }
 
     @Test

@@ -2,23 +2,25 @@ package com.floppahost.adaptiveplanner.planner.domain.model;
 
 import com.floppahost.adaptiveplanner.planner.domain.value.Email;
 import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
+import lombok.Getter;
 
 import java.time.LocalTime;
 import java.util.Objects;
 import java.util.UUID;
 
 
+@Getter
 public final class User {
 
     private final UUID id;
     private Email email;
-    private boolean isActive;
+    private boolean active;
     private UserProfile profile;
 
-    private User(UUID id, Email email, boolean isActive, UserProfile profile) {
+    public User(UUID id, Email email, boolean active, UserProfile profile) {
         this.id = Objects.requireNonNull(id, "id");
-        this.email = email; // nullable
-        this.isActive = isActive;
+        this.email = email;
+        this.active = active;
         this.profile = Objects.requireNonNull(profile, "profile");
     }
 
@@ -35,31 +37,6 @@ public final class User {
         return registerNew(null);
     }
 
-    public static User rehydrate(
-            UUID id,
-            Email email,
-            boolean isActive,
-            UserProfile profile
-    ) {
-        return new User(id, email, isActive, profile);
-    }
-
-    public UUID id() {
-        return id;
-    }
-
-    public Email email() {
-        return email;
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public UserProfile profile() {
-        return profile;
-    }
-
     public void setEmail(Email newEmail) {
         ensureActive();
         this.email = newEmail; // explicit domain permission
@@ -71,11 +48,11 @@ public final class User {
     }
 
     public void deactivate() {
-        this.isActive = false;
+        this.active = false;
     }
 
     public void reactivate() {
-        this.isActive = true;
+        this.active = true;
     }
 
     public void updateSleepWindow(
@@ -108,7 +85,7 @@ public final class User {
     }
 
     private void ensureActive() {
-        if (!isActive) {
+        if (!active) {
             throw new IllegalStateException("User is inactive.");
         }
     }

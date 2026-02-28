@@ -1,6 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.telegram.adapter;
 
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.dto.TelegramUserDto;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto.TelegramUserDto;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.telegram.repository.TelegramUserJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

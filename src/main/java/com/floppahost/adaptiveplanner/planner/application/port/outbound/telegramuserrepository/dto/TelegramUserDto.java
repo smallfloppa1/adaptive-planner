@@ -1,4 +1,4 @@
-package com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserregistry.dto;
+package com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto;
 
 import java.util.UUID;
 

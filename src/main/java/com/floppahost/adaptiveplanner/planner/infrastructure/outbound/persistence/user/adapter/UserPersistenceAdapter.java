@@ -17,19 +17,30 @@ import java.util.UUID;
 public class UserPersistenceAdapter implements UserRepository {
 
     private final UserJpaRepository repository;
+    private final UserMapper userMapper;
 
     @Override
     public Optional<User> findById(UUID id) {
         return repository.findById(id)
-                .map(UserMapper::toDomain);
+                .map(userMapper::toDomain);
     }
 
     @Override
     @Transactional
     public User save(User user) {
-        UserEntity entity = UserMapper.toEntity(user);
+        UserEntity entity;
+
+        Optional<UserEntity> existing = repository.findById(user.getId());
+
+        if (existing.isPresent()) {
+            entity = existing.get();
+            userMapper.updateEntityFromDomain(user, entity);
+        } else {
+            entity = userMapper.toEntity(user);
+        }
+
         UserEntity saved = repository.save(entity);
-        return UserMapper.toDomain(saved);
+        return userMapper.toDomain(saved);
     }
 
     @Override
