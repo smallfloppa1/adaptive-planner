@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
-import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -21,7 +21,7 @@ import java.util.Optional;
 public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
 
     private final TelegramUserRepository telegramUserRepository;
-    private final UserRepository domainUserRepository;
+    private final UserRepository userRepository;
 
     @Override
     public OutgoingResponse handle(IncomingUpdate input) {
@@ -39,62 +39,105 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
             return new OutgoingResponse(input.chatId(), "UNREGISTERED_ERROR", null, null);
         }
 
-        User user = domainUserRepository.findById(telegramUser.get().userId()).orElseThrow();
+        User user = userRepository.findById(telegramUser.get().userId()).orElseThrow();
 
         // Route Callback Queries (Button Clicks)
         if (input.isCallback()) {
             Integer messageId = input.messageId();
             UserProfile currentProfile = user.getProfile();
 
+            // === Wake & Sleep ===
             if (payload.startsWith(BotRoute.PREFIX_SET_WAKE.getPayload())) {
                 String wakeTime = payload.replace(BotRoute.PREFIX_SET_WAKE.getPayload(), "");
 
-                return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_SLEEP|" + wakeTime, user, messageId);
+                return new OutgoingResponse(
+                        input.chatId(),
+                        buildViewNameWithParams("VIEW_SETTINGS_SLEEP", wakeTime),
+                        user,
+                        messageId
+                );
             }
+
             if (payload.startsWith(BotRoute.PREFIX_SET_SLEEP.getPayload())) {
-                String data = payload.replace(BotRoute.PREFIX_SET_SLEEP.getPayload(), "");
-                String[] parts = data.split("_"); // parts[0] is Wake, parts[1] is Sleep
+                String rawData = payload.replace(BotRoute.PREFIX_SET_SLEEP.getPayload(), "");
+                String[] parts = rawData.split("_");
+
+                if (parts.length < 2) return null;
 
                 LocalTime newWake = LocalTime.parse(parts[0]);
                 LocalTime newSleep = LocalTime.parse(parts[1]);
 
                 user.updateSleepWindow(newWake, newSleep, currentProfile.minSleepHours());
-                domainUserRepository.save(user);
+                userRepository.save(user);
 
-                return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_MAIN", user, messageId);
+                return new OutgoingResponse(
+                        input.chatId(),
+                        "VIEW_SETTINGS_MAIN",
+                        user,
+                        messageId
+                );
             }
+
+            // === Focus & Break ===
             if (payload.startsWith(BotRoute.PREFIX_SET_FOCUS.getPayload())) {
-                String[] parts = payload.replace(BotRoute.PREFIX_SET_FOCUS.getPayload(), "").split("_");
+                String rawData = payload.replace(BotRoute.PREFIX_SET_FOCUS.getPayload(), "");
+                String[] parts = rawData.split("_");
 
-                int focusMinutes = Integer.parseInt(parts[0]);
-                int breakMinutes = Integer.parseInt(parts[1]);
+                if (parts.length < 2) return null;
 
-                user.updateFocusCycle(focusMinutes, breakMinutes);
-                domainUserRepository.save(user);
+                String focusMinutesStr = parts[0];
+                String breakMinutesStr = parts[1];
 
-                return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_MAIN", user, messageId);
+                user.updateFocusCycle(Integer.parseInt(focusMinutesStr), Integer.parseInt(breakMinutesStr));
+                userRepository.save(user);
+
+                return new OutgoingResponse(
+                        input.chatId(),
+                        "VIEW_SETTINGS_MAIN",
+                        user,
+                        messageId
+                );
             }
+
+            // === Caps & Limits ===
             if (payload.startsWith(BotRoute.PREFIX_SET_HEAVY_CAP.getPayload())) {
-                String cap = payload.replace(BotRoute.PREFIX_SET_HEAVY_CAP.getPayload(), "");
+                String rawData = payload.replace(BotRoute.PREFIX_SET_HEAVY_CAP.getPayload(), "");
 
-                int maxHeavyBlocks = Integer.parseInt(cap);
+                int maxHeavyBlocks = Integer.parseInt(rawData);
 
-                user.updatePlanningConstraints();
-                return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_CAPS", user, messageId); // Back to Caps menu
+                user.updateMaxHeavyBlocksPerDay(maxHeavyBlocks);
+                userRepository.save(user);
+
+                return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_CAPS", user, messageId);
             }
+
             if (payload.startsWith(BotRoute.PREFIX_SET_DAILY_LOAD.getPayload())) {
-                String max = payload.replace(BotRoute.PREFIX_SET_DAILY_LOAD.getPayload(), "");
-                // TODO: Update domain -> maxDailyLoad = Integer.parseInt(max)
-                return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_CAPS", user, messageId); // Back to Caps menu
+                String rawData = payload.replace(BotRoute.PREFIX_SET_DAILY_LOAD.getPayload(), "");
+
+                int dailyLoadMinutes = Integer.parseInt(rawData);
+
+                user.updateMaxDailyLoadMinutes(dailyLoadMinutes);
+                userRepository.save(user);
+
+                return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_CAPS", user, messageId);
             }
+
+            // === Goals & Rules ===
             if (payload.startsWith(BotRoute.PREFIX_SET_WEEKLY_TARGET.getPayload())) {
-                String target = payload.replace(BotRoute.PREFIX_SET_WEEKLY_TARGET.getPayload(), "");
-                // TODO: Update domain -> weeklyTarget = Integer.parseInt(target)
-                return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_GOALS", user, messageId); // Back to Goals menu
+                String rawData = payload.replace(BotRoute.PREFIX_SET_WEEKLY_TARGET.getPayload(), "");
+
+                int targetMinutes = Integer.parseInt(rawData);
+
+                user.updateWeeklyTargetMinutes(targetMinutes);
+                userRepository.save(user);
+
+                return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_GOALS", user, messageId);
             }
+
             if (BotRoute.TOGGLE_STRICT_ENFORCEMENT.getPayload().equals(payload)) {
-                // TODO: Update domain -> toggle strict enforcement boolean
-                // Reloads the exact same menu, but the factory will draw it with the new toggled state
+                user.toggleStrictEnforcement();
+                userRepository.save(user);
+
                 return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_GOALS", user, messageId);
             }
 
@@ -109,16 +152,31 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
         return null;
     }
 
+    private String buildViewNameWithParams(String viewName, String... params) {
+        StringBuilder responseBuilder = new StringBuilder();
+        responseBuilder.append(viewName.toUpperCase(Locale.ENGLISH));
+
+        if (params != null) {
+            responseBuilder.append("|");
+            for (String param : params) {
+                responseBuilder.append(param).append("_");
+            }
+            responseBuilder.deleteCharAt(responseBuilder.length() - 1); // Remove trailing underscore
+        }
+
+        return responseBuilder.toString();
+    }
+
     private OutgoingResponse handleStart(IncomingUpdate input) {
         long telegramUserId = input.userId();
         User user;
 
         if (telegramUserRepository.isPresentByTelegramUserId(telegramUserId)) {
             TelegramUserDto tgUser = telegramUserRepository.findByTelegramUserId(telegramUserId).get();
-            user = domainUserRepository.findById(tgUser.userId()).get();
+            user = userRepository.findById(tgUser.userId()).get();
         } else {
             user = User.registerWithoutEmail();
-            domainUserRepository.save(user);
+            userRepository.save(user);
 
             TelegramUserDto telegramUser = new TelegramUserDto(user.getId(), telegramUserId, input.chatId());
             telegramUserRepository.save(telegramUser);

@@ -69,7 +69,27 @@ public final class User {
         this.profile = this.profile.withFocusCycle(focusMinutes, breakMinutes);
     }
 
-    public void updatePlanningConstraints(
+    public void updateMaxHeavyBlocksPerDay(int maxHeavyBlocksPerDay) {
+        ensureActive();
+        this.profile = this.profile.withMaxHeavyBlocksPerDay(maxHeavyBlocksPerDay);
+    }
+
+    public void updateMaxDailyLoadMinutes(int maxDailyLoadMinutes) {
+        ensureActive();
+        this.profile = this.profile.withMaxTotalPlannedMinutesPerDay(maxDailyLoadMinutes);
+    }
+
+    public void updateWeeklyTargetMinutes(int weeklyTargetMinutes) {
+        ensureActive();
+        this.profile = this.profile.withWeeklyStudyTargetMinutes(weeklyTargetMinutes);
+    }
+
+    public void toggleStrictEnforcement() {
+        ensureActive();
+        this.profile = this.profile.withToggledStrictEnforcement();
+    }
+
+    /*public void updatePlanningConstraints(
             int maxHeavyBlocksPerDay,
             int maxTotalPlannedMinutesPerDay,
             int weeklyStudyTargetMinutes,
@@ -82,7 +102,7 @@ public final class User {
                 weeklyStudyTargetMinutes,
                 strictEnforcement
         );
-    }
+    }*/
 
     private void ensureActive() {
         if (!active) {

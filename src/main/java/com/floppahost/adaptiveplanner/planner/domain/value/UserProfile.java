@@ -1,5 +1,7 @@
 package com.floppahost.adaptiveplanner.planner.domain.value;
 
+import lombok.With;
+
 import java.time.Duration;
 import java.time.LocalTime;
 
@@ -8,11 +10,19 @@ public record UserProfile(
         LocalTime wakeTime,
         LocalTime sleepTime,
         double minSleepHours,
+
         int focusMinutes,
         int breakMinutes,
+
+        @With
         int maxHeavyBlocksPerDay,
+
+        @With
         int maxTotalPlannedMinutesPerDay,
+
+        @With
         int weeklyStudyTargetMinutes,
+
         boolean strictEnforcement
 ) {
 
@@ -76,7 +86,23 @@ public record UserProfile(
         );
     }
 
-    public UserProfile withPlanningConstraints(
+    public UserProfile withToggledStrictEnforcement() {
+        boolean newStrictEnforcement = !this.strictEnforcement;
+
+        return new UserProfile(
+                wakeTime,
+                sleepTime,
+                minSleepHours,
+                focusMinutes,
+                breakMinutes,
+                maxHeavyBlocksPerDay,
+                maxTotalPlannedMinutesPerDay,
+                weeklyStudyTargetMinutes,
+                newStrictEnforcement
+        );
+    }
+
+    /*public UserProfile withPlanningConstraints(
             int maxHeavyBlocksPerDay,
             int maxTotalPlannedMinutesPerDay,
             int weeklyStudyTargetMinutes,
@@ -93,7 +119,7 @@ public record UserProfile(
                 weeklyStudyTargetMinutes,
                 strictEnforcement
         );
-    }
+    }*/
 
     private static void validateSleepWindow(
             LocalTime wakeTime,

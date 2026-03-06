@@ -1,8 +1,8 @@
 CREATE TABLE users
 (
-    id         uuid PRIMARY KEY,
+    id         UUID PRIMARY KEY,
     email      VARCHAR(255),
     active     BOOLEAN     NOT NULL,
-    created_at timestamptz NOT NULL,
-    updated_at timestamptz NOT NULL
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
 );

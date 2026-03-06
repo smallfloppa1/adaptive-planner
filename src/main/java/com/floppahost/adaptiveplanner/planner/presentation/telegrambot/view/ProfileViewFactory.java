@@ -20,8 +20,14 @@ public class ProfileViewFactory {
         if (response.viewName() == null) return null;
 
         if (response.viewName().startsWith("VIEW_SETTINGS_SLEEP|")) {
-            String wakeTime = response.viewName().split("\\|")[1];
+            String wakeTime = getParamsFromView(response.viewName())[0]; // { wakeTime }
             return buildSleepMenu(response.chatId(), response.editMessageId(), wakeTime);
+        }
+
+        if (response.viewName().startsWith("VIEW_SETTINGS_FOCUS|")) {
+            String[] params = getParamsFromView(response.viewName()); // { focusMinutes, breakMinutes }
+            String focusMinutes = params[0];
+            String breakMinutes = params[1];
         }
 
         return switch (response.viewName()) {
@@ -41,9 +47,6 @@ public class ProfileViewFactory {
         };
     }
 
-    // ==========================================
-    // 1. WELCOME MESSAGE
-    // ==========================================
     private BotApiMethod<?> buildWelcomeMessage(Long chatId, User user, Integer messageId) {
 
         UserProfile profile = user.getProfile();
@@ -100,9 +103,6 @@ public class ProfileViewFactory {
         }
     }
 
-    // ==========================================
-    // 2. SETTINGS MAIN MENU
-    // ==========================================
     private EditMessageText buildSettingsMainMenu(Long chatId, Integer messageId, User user) {
         String text = """
                 ⚙️ <b>Profile Settings</b>
@@ -125,9 +125,6 @@ public class ProfileViewFactory {
                 .build();
     }
 
-    // ==========================================
-    // 3. WAKE / SLEEP MENU
-    // ==========================================
     private EditMessageText buildWakeSleepMenu(Long chatId, Integer messageId, User user) {
         String text = "⏰ <b>Set Wake & Sleep Times</b>\nWhat time do you usually wake up?";
 
@@ -150,9 +147,6 @@ public class ProfileViewFactory {
                 .build();
     }
 
-    // ==========================================
-    // 4. ADD FIXED EVENTS MENU
-    // ==========================================
     private EditMessageText buildFixedEventsMenu(Long chatId, Integer messageId) {
         String text = """
                 Profile saved! 💾
@@ -174,9 +168,6 @@ public class ProfileViewFactory {
                 .build();
     }
 
-    // ==========================================
-    // TWO-STEP WAKE/SLEEP MENUS
-    // ==========================================
     private EditMessageText buildWakeMenu(Long chatId, Integer messageId) {
         String text = "⏰ <b>Set Wake & Sleep Times</b>\nWhat time do you usually wake up?";
         InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
@@ -212,9 +203,6 @@ public class ProfileViewFactory {
                 .build();
     }
 
-    // ==========================================
-    // FOCUS & BREAK MENU
-    // ==========================================
     private EditMessageText buildFocusMenu(Long chatId, Integer messageId) {
         String text = "🧠 <b>Focus & Break</b>\nChoose your preferred Pomodoro rhythm:";
         InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
@@ -223,12 +211,15 @@ public class ProfileViewFactory {
                 .keyboardRow(new InlineKeyboardRow(button("🔋 Marathon (90m work / 15m break)", BotRoute.PREFIX_SET_FOCUS.getPayload() + "90_15")))
                 .keyboardRow(new InlineKeyboardRow(button("🔙 Back", BotRoute.ADJUST_PROFILE.getPayload())))
                 .build();
-        return EditMessageText.builder().chatId(chatId.toString()).messageId(messageId).text(text).parseMode("HTML").replyMarkup(markup).build();
+        return EditMessageText.builder()
+                .chatId(chatId.toString())
+                .messageId(messageId)
+                .text(text)
+                .parseMode("HTML")
+                .replyMarkup(markup)
+                .build();
     }
 
-    // ==========================================
-    // CAPS & LIMITS MENUS
-    // ==========================================
     private EditMessageText buildCapsMenu(Long chatId, Integer messageId, User user) {
         String text = "🔋 <b>Caps & Limits</b>\n<i>Current: Max %d Heavy Blocks, %d mins total.</i>\nWhat do you want to change?".formatted(
                 user.getProfile().maxHeavyBlocksPerDay(), user.getProfile().maxTotalPlannedMinutesPerDay()
@@ -252,13 +243,21 @@ public class ProfileViewFactory {
                 ))
                 .keyboardRow(new InlineKeyboardRow(button("🔙 Back", BotRoute.MENU_CAPS_LIMITS.getPayload())))
                 .build();
-        return EditMessageText.builder().chatId(chatId.toString()).messageId(messageId).text(text).parseMode("HTML").replyMarkup(markup).build();
+
+        return EditMessageText.builder()
+                .chatId(chatId.toString())
+                .messageId(messageId)
+                .text(text)
+                .parseMode("HTML")
+                .replyMarkup(markup)
+                .build();
     }
 
     private EditMessageText buildMaxDailyMenu(Long chatId, Integer messageId) {
         String text = "⏳ <b>Max Daily Load</b>\nSelect maximum minutes the bot can schedule per day:";
         InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
                 .keyboardRow(new InlineKeyboardRow(
+                        button("2 Hours (120m)", BotRoute.PREFIX_SET_DAILY_LOAD.getPayload() + "120"),
                         button("4 Hours (240m)", BotRoute.PREFIX_SET_DAILY_LOAD.getPayload() + "240"),
                         button("6 Hours (360m)", BotRoute.PREFIX_SET_DAILY_LOAD.getPayload() + "360")
                 ))
@@ -268,17 +267,21 @@ public class ProfileViewFactory {
                 ))
                 .keyboardRow(new InlineKeyboardRow(button("🔙 Back", BotRoute.MENU_CAPS_LIMITS.getPayload())))
                 .build();
-        return EditMessageText.builder().chatId(chatId.toString()).messageId(messageId).text(text).parseMode("HTML").replyMarkup(markup).build();
+
+        return EditMessageText.builder()
+                .chatId(chatId.toString())
+                .messageId(messageId)
+                .text(text)
+                .parseMode("HTML")
+                .replyMarkup(markup).
+                build();
     }
 
-    // ==========================================
-    // GOALS & RULES MENUS
-    // ==========================================
     private EditMessageText buildGoalsMenu(Long chatId, Integer messageId, User user) {
         String text = "🎯 <b>Goals & Rules</b>\n<i>Current: %d mins/week.</i>\nWhat do you want to change?".formatted(
                 user.getProfile().weeklyStudyTargetMinutes()
         );
-        String strictToggleText = user.getProfile().strictEnforcement() ? "🛡️ Strict Enforcement: ON (Click to Disable)" : "🛡️ Strict Enforcement: OFF (Click to Enable)";
+        String strictToggleText = user.getProfile().strictEnforcement() ? "🛡️ Strict Enforcement: ON" : "🛡️ Strict Enforcement: OFF";
 
         InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
                 .keyboardRow(new InlineKeyboardRow(button("⏱️ Edit Weekly Target", BotRoute.MENU_EDIT_WEEKLY_TARGET.getPayload())))
@@ -304,13 +307,16 @@ public class ProfileViewFactory {
         return EditMessageText.builder().chatId(chatId.toString()).messageId(messageId).text(text).parseMode("HTML").replyMarkup(markup).build();
     }
 
-    // ==========================================
-    // HELPER METHOD
-    // ==========================================
+    // Helper methods
     private InlineKeyboardButton button(String text, String callbackData) {
         return InlineKeyboardButton.builder()
                 .text(text)
                 .callbackData(callbackData)
                 .build();
+    }
+
+    private String[] getParamsFromView(String viewName) {
+        String paramStr = viewName.split("\\|")[1];
+        return paramStr.split("_");
     }
 }

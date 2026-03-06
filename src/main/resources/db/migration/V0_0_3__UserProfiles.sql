@@ -10,8 +10,8 @@ CREATE TABLE user_profiles
     max_total_planned_minutes_per_day INTEGER          NOT NULL,
     weekly_study_target_minutes       INTEGER          NOT NULL,
     strict_enforcement                BOOLEAN          NOT NULL,
-    created_at                        timestamptz      NOT NULL,
-    updated_at                        timestamptz      NOT NULL,
+    created_at                        TIMESTAMPTZ      NOT NULL,
+    updated_at                        TIMESTAMPTZ      NOT NULL,
 
     CONSTRAINT fk_user_profiles_user
         FOREIGN KEY (user_id)
