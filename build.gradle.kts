@@ -1,7 +1,7 @@
 plugins {
     java
-    id("org.springframework.boot") version "4.0.2"
-    id("io.spring.dependency-management") version "1.1.7"
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
 }
 
 group = "com.floppahost"
@@ -25,37 +25,48 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-flyway")
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    implementation("org.flywaydb:flyway-database-postgresql")
+    // Platforms / BOMs
+    implementation(platform(libs.spring.dotenv.bom))
 
-    implementation("org.telegram:telegrambots-springboot-longpolling-starter:9.3.0")
-    implementation("org.telegram:telegrambots-client:9.3.0")
+    // Implementation
+    implementation(libs.flyway.database.postgresql)
+    implementation(libs.mapstruct)
+    implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.flyway)
+    implementation(libs.spring.boot.starter.webmvc)
+    implementation(libs.telegram.client)
+    implementation(libs.telegram.starter)
 
-    implementation(platform("me.paulschwarz:spring-dotenv-bom:5.1.0"))
-    developmentOnly("me.paulschwarz:springboot4-dotenv")
+    // Compile Only
+    compileOnly(libs.lombok)
 
-    implementation("org.mapstruct:mapstruct:1.6.3");
-    annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
-    annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
+    // Runtime Only
+    runtimeOnly(libs.postgresql)
 
-    compileOnly("org.projectlombok:lombok")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
-    runtimeOnly("org.postgresql:postgresql")
-    annotationProcessor("org.projectlombok:lombok")
-    testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-flyway-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("com.h2database:h2")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    // Development Only
+    developmentOnly(libs.spring.boot.devtools)
+    developmentOnly(libs.springboot4.dotenv)
+
+    // Annotation Processors
+    annotationProcessor(libs.lombok)
+    annotationProcessor(libs.lombok.mapstruct.binding)
+    annotationProcessor(libs.mapstruct.processor)
+
+    // Test Implementation Platforms
+    testImplementation(platform(libs.testcontainers.bom))
+
+    // Test Implementation
+    testImplementation(libs.spring.boot.starter.data.jpa.test)
+    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.testcontainers)
+    testImplementation(libs.testcontainers.junit.jupiter)
+    testImplementation(libs.testcontainers.postgresql)
+
+    // Test Runtime Only
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    jvmArgs("-javaagent:${configurations.testRuntimeClasspath.get()
-        .find { it.name.contains("mockito-core") }?.absolutePath}")
 }
