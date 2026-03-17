@@ -37,6 +37,14 @@ public final class User {
         return registerNew(null);
     }
 
+    public void deactivate() {
+        this.active = false;
+    }
+
+    public void reactivate() {
+        this.active = true;
+    }
+
     public void setEmail(Email newEmail) {
         ensureActive();
         this.email = newEmail; // explicit domain permission
@@ -45,14 +53,6 @@ public final class User {
     public void clearEmail() {
         ensureActive();
         this.email = null;
-    }
-
-    public void deactivate() {
-        this.active = false;
-    }
-
-    public void reactivate() {
-        this.active = true;
     }
 
     public void updateSleepWindow(
@@ -89,20 +89,7 @@ public final class User {
         this.profile = this.profile.withToggledStrictEnforcement();
     }
 
-    /*public void updatePlanningConstraints(
-            int maxHeavyBlocksPerDay,
-            int maxTotalPlannedMinutesPerDay,
-            int weeklyStudyTargetMinutes,
-            boolean strictEnforcement
-    ) {
-        ensureActive();
-        this.profile = this.profile.withPlanningConstraints(
-                maxHeavyBlocksPerDay,
-                maxTotalPlannedMinutesPerDay,
-                weeklyStudyTargetMinutes,
-                strictEnforcement
-        );
-    }*/
+    // Helper Methods
 
     private void ensureActive() {
         if (!active) {

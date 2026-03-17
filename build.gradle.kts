@@ -2,6 +2,7 @@ plugins {
     java
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
+    jacoco
 }
 
 group = "com.floppahost"
@@ -69,4 +70,26 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+
+//    classDirectories.setFrom(
+//        files(classDirectories.files.map {
+//            fileTree(it) {
+//                exclude("**/AdaptivePlannerApplication.class")
+//                exclude("**/*MapperImpl.class")
+//            }
+//        })
+//    )
 }

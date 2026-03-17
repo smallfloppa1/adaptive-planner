@@ -3,17 +3,12 @@ package com.floppahost.adaptiveplanner.planner.domain.service;
 import com.floppahost.adaptiveplanner.planner.domain.dto.TimeGridResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
-import com.floppahost.adaptiveplanner.planner.domain.service.TimeGridService;
-import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
-import com.floppahost.adaptiveplanner.planner.domain.value.FixedEventKind;
-import com.floppahost.adaptiveplanner.planner.domain.value.Slot;
-import com.floppahost.adaptiveplanner.planner.domain.value.TimeRange;
-import com.floppahost.adaptiveplanner.planner.domain.value.Weekday;
+import com.floppahost.adaptiveplanner.planner.domain.value.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -68,7 +63,7 @@ class TimeGridServiceTest {
                 .userId(userId)
                 .kind(FixedEventKind.CLASS)
                 .title("Math")
-                .weekday(Weekday.MONDAY)
+                .weekday(DayOfWeek.MONDAY)
                 .recurringTimeRange(new TimeRange(
                         LocalTime.of(9, 0),
                         LocalTime.of(11, 0)
@@ -92,7 +87,7 @@ class TimeGridServiceTest {
                 .userId(userId)
                 .kind(FixedEventKind.CLASS)
                 .title("Physics")
-                .weekday(Weekday.MONDAY)
+                .weekday(DayOfWeek.MONDAY)
                 .recurringTimeRange(new TimeRange(
                         LocalTime.of(10, 0),
                         LocalTime.of(12, 0)
@@ -119,7 +114,7 @@ class TimeGridServiceTest {
                 .userId(userId)
                 .kind(FixedEventKind.CLASS)
                 .title("Math")
-                .weekday(Weekday.MONDAY)
+                .weekday(DayOfWeek.MONDAY)
                 .recurringTimeRange(new TimeRange(
                         LocalTime.of(9, 0),
                         LocalTime.of(11, 0)
@@ -179,7 +174,7 @@ class TimeGridServiceTest {
                 .userId(userId)
                 .kind(FixedEventKind.CLASS)
                 .title("Event")
-                .weekday(Weekday.MONDAY)
+                .weekday(DayOfWeek.MONDAY)
                 .recurringTimeRange(new TimeRange(
                         LocalTime.of(sh, sm),
                         LocalTime.of(eh, em)

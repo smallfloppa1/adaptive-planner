@@ -3,7 +3,7 @@ package com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persisten
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles
 @EnableJpaAuditing
+@ActiveProfiles("test")
 public class JpaTestConfig {
 }

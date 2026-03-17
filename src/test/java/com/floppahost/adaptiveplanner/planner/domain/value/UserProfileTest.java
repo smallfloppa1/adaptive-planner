@@ -1,7 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.domain.value;
 
 import org.junit.jupiter.api.DisplayName;
-
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;
@@ -81,29 +80,6 @@ class UserProfileTest {
 
         assertEquals(newFocusMinutes, updatedProfile.focusMinutes());
         assertEquals(newBreakMinutes, updatedProfile.breakMinutes());
-        assertEquals(initialProfile.wakeTime(), updatedProfile.wakeTime());
-    }
-
-    @Test
-    @DisplayName("Should return new UserProfile with updated planning constraints")
-    void shouldReturnNewUserProfileWithUpdatedPlanningConstraints() {
-        UserProfile initialProfile = UserProfile.defaults();
-        int newMaxHeavyBlocksPerDay = 4;
-        int newMaxTotalPlannedMinutesPerDay = 9 * 60;
-        int newWeeklyStudyTargetMinutes = 12 * 60;
-        boolean newStrictEnforcement = false;
-
-        UserProfile updatedProfile = initialProfile.withPlanningConstraints(
-                newMaxHeavyBlocksPerDay,
-                newMaxTotalPlannedMinutesPerDay,
-                newWeeklyStudyTargetMinutes,
-                newStrictEnforcement
-        );
-
-        assertEquals(newMaxHeavyBlocksPerDay, updatedProfile.maxHeavyBlocksPerDay());
-        assertEquals(newMaxTotalPlannedMinutesPerDay, updatedProfile.maxTotalPlannedMinutesPerDay());
-        assertEquals(newWeeklyStudyTargetMinutes, updatedProfile.weeklyStudyTargetMinutes());
-        assertEquals(newStrictEnforcement, updatedProfile.strictEnforcement());
         assertEquals(initialProfile.wakeTime(), updatedProfile.wakeTime());
     }
 

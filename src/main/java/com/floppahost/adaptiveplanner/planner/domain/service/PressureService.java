@@ -4,7 +4,6 @@ package com.floppahost.adaptiveplanner.planner.domain.service;
 import com.floppahost.adaptiveplanner.planner.domain.model.Exam;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -26,9 +25,7 @@ public class PressureService {
      * @return Pressure value (0.0 or positive)
      */
     public double calculateExamPressure(LocalDate today, Exam exam) {
-        LocalDate examDate = exam.getStartsAt()
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate();
+        LocalDate examDate = exam.getStartsAt().toLocalDate();
         
         long daysLeft = ChronoUnit.DAYS.between(today, examDate);
         

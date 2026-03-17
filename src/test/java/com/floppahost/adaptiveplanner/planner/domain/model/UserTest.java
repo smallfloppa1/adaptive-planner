@@ -1,10 +1,9 @@
 package com.floppahost.adaptiveplanner.planner.domain.model;
 
-import org.junit.jupiter.api.DisplayName;
-
 import com.floppahost.adaptiveplanner.planner.domain.value.Email;
 import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;
@@ -24,20 +23,20 @@ class UserTest {
     @Test
     @DisplayName("Should register a new user with an email")
     void shouldRegisterNewUserWithEmail() {
-        assertNotNull(user.id());
-        assertEquals("test@example.com", user.email().value());
+        assertNotNull(user.getId());
+        assertEquals("test@example.com", user.getEmail().value());
         assertTrue(user.isActive());
-        assertNotNull(user.profile());
+        assertNotNull(user.getProfile());
     }
 
     @Test
     @DisplayName("Should register a new user without an email")
     void shouldRegisterNewUserWithoutEmail() {
         User userWithoutEmail = User.registerWithoutEmail();
-        assertNotNull(userWithoutEmail.id());
-        assertNull(userWithoutEmail.email());
+        assertNotNull(userWithoutEmail.getId());
+        assertNull(userWithoutEmail.getEmail());
         assertTrue(userWithoutEmail.isActive());
-        assertNotNull(userWithoutEmail.profile());
+        assertNotNull(userWithoutEmail.getProfile());
     }
 
     @Test
@@ -45,14 +44,14 @@ class UserTest {
     void shouldSetUsersEmail() {
         Email newEmail = new Email("new@example.com");
         user.setEmail(newEmail);
-        assertEquals(newEmail, user.email());
+        assertEquals(newEmail, user.getEmail());
     }
 
     @Test
     @DisplayName("Should clear user's email")
     void shouldClearUsersEmail() {
         user.clearEmail();
-        assertNull(user.email());
+        assertNull(user.getEmail());
     }
 
     @Test
@@ -73,7 +72,10 @@ class UserTest {
         assertThrows(IllegalStateException.class, () -> user.clearEmail());
         assertThrows(IllegalStateException.class, () -> user.updateSleepWindow(LocalTime.now(), LocalTime.now(), 8));
         assertThrows(IllegalStateException.class, () -> user.updateFocusCycle(1, 1));
-        assertThrows(IllegalStateException.class, () -> user.updatePlanningConstraints(1, 1, 1, true));
+        assertThrows(IllegalStateException.class, () -> user.updateMaxHeavyBlocksPerDay(1));
+        assertThrows(IllegalStateException.class, () -> user.updateMaxDailyLoadMinutes(1));
+        assertThrows(IllegalStateException.class, () -> user.updateWeeklyTargetMinutes(1));
+        assertThrows(IllegalStateException.class, () -> user.toggleStrictEnforcement());
     }
 
     @Test
@@ -85,7 +87,7 @@ class UserTest {
 
         user.updateSleepWindow(newWakeTime, newSleepTime, newMinSleepHours);
 
-        UserProfile updatedProfile = user.profile();
+        UserProfile updatedProfile = user.getProfile();
         assertEquals(newWakeTime, updatedProfile.wakeTime());
         assertEquals(newSleepTime, updatedProfile.sleepTime());
         assertEquals(newMinSleepHours, updatedProfile.minSleepHours());
@@ -99,30 +101,8 @@ class UserTest {
 
         user.updateFocusCycle(newFocusMinutes, newBreakMinutes);
 
-        UserProfile updatedProfile = user.profile();
+        UserProfile updatedProfile = user.getProfile();
         assertEquals(newFocusMinutes, updatedProfile.focusMinutes());
         assertEquals(newBreakMinutes, updatedProfile.breakMinutes());
-    }
-
-    @Test
-    @DisplayName("Should update user's planning constraints in profile")
-    void shouldUpdateUsersPlanningConstraintsInProfile() {
-        int newMaxHeavyBlocksPerDay = 4;
-        int newMaxTotalPlannedMinutesPerDay = 9 * 60;
-        int newWeeklyStudyTargetMinutes = 12 * 60;
-        boolean newStrictEnforcement = false;
-
-        user.updatePlanningConstraints(
-                newMaxHeavyBlocksPerDay,
-                newMaxTotalPlannedMinutesPerDay,
-                newWeeklyStudyTargetMinutes,
-                newStrictEnforcement
-        );
-
-        UserProfile updatedProfile = user.profile();
-        assertEquals(newMaxHeavyBlocksPerDay, updatedProfile.maxHeavyBlocksPerDay());
-        assertEquals(newMaxTotalPlannedMinutesPerDay, updatedProfile.maxTotalPlannedMinutesPerDay());
-        assertEquals(newWeeklyStudyTargetMinutes, updatedProfile.weeklyStudyTargetMinutes());
-        assertEquals(newStrictEnforcement, updatedProfile.strictEnforcement());
     }
 }

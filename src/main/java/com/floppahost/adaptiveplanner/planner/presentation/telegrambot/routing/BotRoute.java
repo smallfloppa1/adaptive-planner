@@ -66,6 +66,6 @@ public enum BotRoute {
                 return route;
             }
         }
-        return null; // Return null or a default UNKNOWN route
+        return null;
     }
 }

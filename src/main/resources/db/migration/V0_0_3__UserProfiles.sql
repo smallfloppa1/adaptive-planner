@@ -4,6 +4,8 @@ CREATE TABLE user_profiles
     wake_time                         TIME             NOT NULL,
     sleep_time                        TIME             NOT NULL,
     min_sleep_hours                   DOUBLE PRECISION NOT NULL,
+    morning_routine_minutes           INTEGER          NOT NULL,
+    evening_routine_minutes           INTEGER          NOT NULL,
     focus_minutes                     INTEGER          NOT NULL,
     break_minutes                     INTEGER          NOT NULL,
     max_heavy_blocks_per_day          INTEGER          NOT NULL,

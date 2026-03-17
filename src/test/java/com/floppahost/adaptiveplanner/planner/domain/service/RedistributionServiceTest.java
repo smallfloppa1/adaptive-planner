@@ -4,16 +4,16 @@ import com.floppahost.adaptiveplanner.planner.domain.dto.RedistributionResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.DayPlan;
 import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
-import com.floppahost.adaptiveplanner.planner.domain.service.PlanningEngine;
-import com.floppahost.adaptiveplanner.planner.domain.service.RedistributionService;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockStatus;
+import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -201,12 +201,7 @@ class RedistributionServiceTest {
     @DisplayName("Should cap daily target at profile maximum")
     void shouldCapDailyTarget() {
         LocalDate thursday = monday.plusDays(3);
-        UserProfile limited = profile.withPlanningConstraints(
-                profile.maxHeavyBlocksPerDay(),
-                100,
-                profile.weeklyStudyTargetMinutes(),
-                profile.strictEnforcement()
-        );
+        UserProfile limited = profile.withMaxTotalPlannedMinutesPerDay(100);
 
         Map<LocalDate, DayPlan> existingPlans = Map.of(
                 monday, createPlanWithStudyMinutes(monday, 50)

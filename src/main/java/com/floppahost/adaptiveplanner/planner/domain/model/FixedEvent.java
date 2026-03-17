@@ -4,26 +4,22 @@ package com.floppahost.adaptiveplanner.planner.domain.model;
 import com.floppahost.adaptiveplanner.planner.domain.value.DateTimeRange;
 import com.floppahost.adaptiveplanner.planner.domain.value.FixedEventKind;
 import com.floppahost.adaptiveplanner.planner.domain.value.TimeRange;
-import com.floppahost.adaptiveplanner.planner.domain.value.Weekday;
-import lombok.Builder;
-import lombok.Value;
-import lombok.With;
+import lombok.Getter;
 
+import java.time.DayOfWeek;
 import java.util.UUID;
 
-@Value
-@Builder
-@With
+@Getter
 public class FixedEvent {
-    UUID userId;
-    FixedEventKind kind;
-    String title;
 
-    @Builder.Default
     UUID id = UUID.randomUUID();
 
+    UUID userId;
+    String title;
+    FixedEventKind kind;
+
     // Recurring weekly
-    Weekday weekday;
+    DayOfWeek recurringWeekday;
     TimeRange recurringTimeRange;
 
     // One-time
@@ -32,10 +28,48 @@ public class FixedEvent {
     String location;
     String notes;
 
-    @Builder.Default
     boolean active = true;
 
-    public FixedEvent(
+    private FixedEvent(UUID userId, FixedEventKind kind, String title) {
+        this.userId = userId;
+        this.kind = kind;
+        this.title = title;
+    }
+
+    public static FixedEvent createBase(UUID userId, String title, FixedEventKind kind) {
+        return new FixedEvent(
+                userId,
+                kind,
+                title
+        );
+    }
+
+    public void addOneTimeBlock(DateTimeRange range) {
+        if (recurringWeekday != null || recurringTimeRange != null) {
+            throw new IllegalArgumentException("FixedEvent: cannot be both recurring and one-time");
+        }
+
+        if (oneTimeRange != null) {
+            throw new IllegalArgumentException("FixedEvent: cannot have multiple one-time blocks");
+        }
+
+        this.oneTimeRange = range;
+    }
+
+    public void addRecurringBlock(DayOfWeek weekday, TimeRange range) {
+        if (oneTimeRange != null) {
+            throw new IllegalArgumentException("FixedEvent: cannot be both recurring and one-time");
+        }
+
+        if (recurringWeekday != null || recurringTimeRange != null) {
+            throw new IllegalArgumentException("FixedEvent: cannot have multiple recurring blocks");
+        }
+
+        this.recurringWeekday = weekday;
+        this.recurringTimeRange = range;
+    }
+
+    /*public FixedEvent create(
             UUID userId,
             FixedEventKind kind,
             String title,
@@ -68,15 +102,17 @@ public class FixedEvent {
             throw new IllegalArgumentException("FixedEvent: title is required");
         }
 
-        this.userId = userId;
-        this.kind = kind;
-        this.title = title;
-        this.id = id;
-        this.weekday = weekday;
-        this.recurringTimeRange = recurringTimeRange;
-        this.oneTimeRange = oneTimeRange;
-        this.location = location;
-        this.notes = notes;
-        this.active = active;
-    }
+        return new FixedEvent(
+                userId,
+                kind,
+                title,
+                id,
+                weekday,
+                recurringTimeRange,
+                oneTimeRange,
+                location,
+                notes,
+                active
+        );
+    }*/
 }

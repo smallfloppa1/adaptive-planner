@@ -11,6 +11,10 @@ public record UserProfile(
         LocalTime sleepTime,
         double minSleepHours,
 
+        // TODO: implement set up and logic of those 2 params
+        int morningRoutineMinutes,
+        int eveningRoutineMinutes,
+
         int focusMinutes,
         int breakMinutes,
 
@@ -31,6 +35,7 @@ public record UserProfile(
         if (sleepTime == null) throw new IllegalArgumentException("sleepTime must not be null when creating UserProfile");
 
         validateSleepWindow(wakeTime, sleepTime, minSleepHours);
+        validateRoutines(wakeTime, sleepTime, morningRoutineMinutes, eveningRoutineMinutes);
         validateFocusCycle(focusMinutes, breakMinutes);
         validateConstraints(
                 maxHeavyBlocksPerDay,
@@ -45,6 +50,8 @@ public record UserProfile(
                 LocalTime.of(7, 0),
                 LocalTime.of(23, 0),
                 7.0,
+                60,
+                60,
                 40,
                 10,
                 3,
@@ -63,6 +70,8 @@ public record UserProfile(
                 wakeTime,
                 sleepTime,
                 minSleepHours,
+                morningRoutineMinutes,
+                eveningRoutineMinutes,
                 focusMinutes,
                 breakMinutes,
                 maxHeavyBlocksPerDay,
@@ -77,6 +86,8 @@ public record UserProfile(
                 wakeTime,
                 sleepTime,
                 minSleepHours,
+                morningRoutineMinutes,
+                eveningRoutineMinutes,
                 focusMinutes,
                 breakMinutes,
                 maxHeavyBlocksPerDay,
@@ -93,6 +104,8 @@ public record UserProfile(
                 wakeTime,
                 sleepTime,
                 minSleepHours,
+                morningRoutineMinutes,
+                eveningRoutineMinutes,
                 focusMinutes,
                 breakMinutes,
                 maxHeavyBlocksPerDay,
@@ -101,25 +114,6 @@ public record UserProfile(
                 newStrictEnforcement
         );
     }
-
-    /*public UserProfile withPlanningConstraints(
-            int maxHeavyBlocksPerDay,
-            int maxTotalPlannedMinutesPerDay,
-            int weeklyStudyTargetMinutes,
-            boolean strictEnforcement
-    ) {
-        return new UserProfile(
-                wakeTime,
-                sleepTime,
-                minSleepHours,
-                focusMinutes,
-                breakMinutes,
-                maxHeavyBlocksPerDay,
-                maxTotalPlannedMinutesPerDay,
-                weeklyStudyTargetMinutes,
-                strictEnforcement
-        );
-    }*/
 
     private static void validateSleepWindow(
             LocalTime wakeTime,
@@ -130,20 +124,39 @@ public record UserProfile(
             throw new IllegalArgumentException("Minimum sleep hours must be greater than 0");
         }
 
-        long sleepMinutes = calculateSleepMinutes(sleepTime, wakeTime);
+        long sleepMinutes = calculateSleepDuration(sleepTime, wakeTime).toMinutes();
 
-        // Catch scenarios where sleep and wake times are exactly the same
         if (sleepMinutes <= 0) {
             throw new IllegalArgumentException("Sleep window must be greater than 0 minutes");
         }
 
-        // Implicitly promotes sleepMinutes to double for accurate comparison
         if (sleepMinutes < minSleepHours * 60) {
             throw new IllegalArgumentException("Sleep window is shorter than the minimum required sleep duration");
         }
     }
 
-    private static long calculateSleepMinutes(LocalTime sleepTime, LocalTime wakeTime) {
+    private static void validateRoutines(
+            LocalTime sleepTime,
+            LocalTime wakeTime,
+            int morningRoutineMinutes,
+            int eveningRoutineMinutes
+    ) {
+        if (morningRoutineMinutes < 0 || eveningRoutineMinutes < 0) {
+            throw new IllegalArgumentException("Routines can not be negative");
+        }
+
+        Duration sleepDuration = calculateSleepDuration(sleepTime, wakeTime);
+        Duration awakeDuration = Duration.ofDays(1).minus(sleepDuration);
+
+        long awakeMinutes = awakeDuration.toMinutes();
+        int allRoutinesMinutes = morningRoutineMinutes + eveningRoutineMinutes;
+
+        if (allRoutinesMinutes >= awakeMinutes) {
+            throw new IllegalArgumentException("Morning and evening routines combined cannot exceed your total awake time");
+        }
+    }
+
+    private static Duration calculateSleepDuration(LocalTime sleepTime, LocalTime wakeTime) {
         Duration duration = Duration.between(sleepTime, wakeTime);
 
         // If the duration is negative, the sleep period crossed midnight
@@ -151,7 +164,7 @@ public record UserProfile(
             duration = duration.plusDays(1);
         }
 
-        return duration.toMinutes();
+        return duration;
     }
 
     private static void validateFocusCycle(int focusMinutes, int breakMinutes) {

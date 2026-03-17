@@ -2,15 +2,17 @@ package com.floppahost.adaptiveplanner.planner.domain.service;
 
 import com.floppahost.adaptiveplanner.planner.domain.dto.AllocationResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
-import com.floppahost.adaptiveplanner.planner.domain.service.BlockAllocationService;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.value.Slot;
+import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -79,12 +81,7 @@ class BlockAllocationServiceTest {
     @DisplayName("Should respect max heavy blocks limit")
     void shouldRespectMaxHeavyBlocksLimit() {
         // Given
-        UserProfile limitedProfile = profile.withPlanningConstraints(
-                2,
-                profile.maxTotalPlannedMinutesPerDay(),
-                profile.weeklyStudyTargetMinutes(),
-                profile.strictEnforcement()
-        );
+        UserProfile limitedProfile = profile.withMaxHeavyBlocksPerDay(2);
 
         List<Slot> freeSlots = List.of(
             createSlot(9, 0, 18, 0) // 9 hours available
@@ -108,12 +105,8 @@ class BlockAllocationServiceTest {
     @DisplayName("Should respect max flexible minutes limit")
     void shouldRespectMaxFlexibleMinutesLimit() {
         // Given
-        UserProfile limitedProfile = profile.withPlanningConstraints(
-                profile.maxHeavyBlocksPerDay(),
-                150,
-                profile.weeklyStudyTargetMinutes(),
-                profile.strictEnforcement()
-        );
+        UserProfile limitedProfile = profile.withMaxTotalPlannedMinutesPerDay(150);
+
         List<Slot> freeSlots = List.of(
             createSlot(9, 0, 18, 0)
         );

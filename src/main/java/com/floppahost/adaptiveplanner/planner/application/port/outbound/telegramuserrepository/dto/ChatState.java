@@ -2,8 +2,8 @@ package com.floppahost.adaptiveplanner.planner.application.port.outbound.telegra
 
 public enum ChatState {
     IDLE,
-    WAITING_FOR_JOB_DAY,
-    WAITING_FOR_JOB_START_TIME,
-    WAITING_FOR_JOB_END_TIME,
-    WAITING_FOR_UNI_CLASS_NAME
+    WAITING_FOR_EVENT_NAME,
+    WAITING_FOR_EVENT_DAY,
+    WAITING_FOR_EVENT_START,
+    WAITING_FOR_EVENT_END
 }

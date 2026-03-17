@@ -1,12 +1,12 @@
 package com.floppahost.adaptiveplanner.planner.domain.value;
 
 public enum FixedEventKind {
+    WORK,
     CLASS,
-    LECTURE,
     MEETING,
     MEAL,
-    EXERCISE,
-    COMMUTE,
-    PERSONAL,
+//    EXERCISE,
+//    COMMUTE,
+//    PERSONAL,
     OTHER
 }

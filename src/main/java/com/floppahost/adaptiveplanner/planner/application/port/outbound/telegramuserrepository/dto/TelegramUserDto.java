@@ -5,6 +5,8 @@ import java.util.UUID;
 public record TelegramUserDto(
         UUID userId,
         long telegramUserId,
-        long chatId
+        long chatId,
+        ChatState state,
+        String statePayload
 ) {
 }

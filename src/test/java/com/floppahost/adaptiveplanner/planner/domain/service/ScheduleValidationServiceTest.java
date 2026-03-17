@@ -3,14 +3,15 @@ package com.floppahost.adaptiveplanner.planner.domain.service;
 import com.floppahost.adaptiveplanner.planner.domain.exception.PlanValidationException;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.DayPlan;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
-import com.floppahost.adaptiveplanner.planner.domain.service.ScheduleValidationService;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
+import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 

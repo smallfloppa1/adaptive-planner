@@ -6,9 +6,9 @@ import com.floppahost.adaptiveplanner.planner.domain.dto.RedistributionResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.DayPlan;
 import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockStatus;
+import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;

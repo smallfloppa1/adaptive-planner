@@ -4,18 +4,25 @@ import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletel
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingUpdate;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingResponse;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.TelegramUserRepository;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto.ChatState;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto.TelegramUserDto;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.userrepository.UserRepository;
+import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
 import com.floppahost.adaptiveplanner.planner.domain.model.User;
+import com.floppahost.adaptiveplanner.planner.domain.value.FixedEventKind;
+import com.floppahost.adaptiveplanner.planner.domain.value.TimeRange;
 import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import com.floppahost.adaptiveplanner.planner.presentation.telegrambot.routing.BotRoute;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.Locale;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
@@ -25,26 +32,42 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
 
     @Override
     public OutgoingResponse handle(IncomingUpdate input) {
-        if (input == null || input.payload() == null || input.payload().isBlank()) return null;
+        log.debug("Processing incoming update. TelegramUserId: {}, isCallback: {}", input.userId(), input.isCallback());
+
+        if (input.payload() == null || input.payload().isBlank()) return null;
         String payload = input.payload().trim();
 
         // Intercept onboarding command
         if ("/start".equalsIgnoreCase(payload)) {
+            log.info("Telegram user [{}] initiated /start command", input.userId());
             return handleStart(input);
         }
 
         // Require registration for all other interactions
-        Optional<TelegramUserDto> telegramUser = telegramUserRepository.findByTelegramUserId(input.userId());
-        if (telegramUser.isEmpty()) {
+        Optional<TelegramUserDto> telegramUserDtoOpt = telegramUserRepository.findByTelegramUserId(input.userId());
+
+        if (telegramUserDtoOpt.isEmpty()) {
+            log.warn("Telegram user [{}] attempted to interact without registration", input.userId());
             return new OutgoingResponse(input.chatId(), "UNREGISTERED_ERROR", null, null);
         }
 
-        User user = userRepository.findById(telegramUser.get().userId()).orElseThrow();
+        TelegramUserDto telegramUserDto = telegramUserDtoOpt.get();
+
+        User user = userRepository.findById(telegramUserDto.userId()).orElseThrow();
 
         // Route Callback Queries (Button Clicks)
         if (input.isCallback()) {
             Integer messageId = input.messageId();
             UserProfile currentProfile = user.getProfile();
+
+            if (BotRoute.ADD_JOB_HOURS.getPayload().equals(payload)) {
+                updateUserChatState(telegramUserDto, ChatState.WAITING_FOR_EVENT_NAME, "WORK");
+                return new OutgoingResponse(input.chatId(), "VIEW_ASK_EVENT_NAME", user, messageId);
+            }
+            if (BotRoute.ADD_UNI_CLASS.getPayload().equals(payload)) {
+                updateUserChatState(telegramUserDto, ChatState.WAITING_FOR_EVENT_NAME, "UNI_CLASS");
+                return new OutgoingResponse(input.chatId(), "VIEW_ASK_EVENT_NAME", user, messageId);
+            }
 
             // === Wake & Sleep ===
             if (payload.startsWith(BotRoute.PREFIX_SET_WAKE.getPayload())) {
@@ -152,21 +175,6 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
         return null;
     }
 
-    private String buildViewNameWithParams(String viewName, String... params) {
-        StringBuilder responseBuilder = new StringBuilder();
-        responseBuilder.append(viewName.toUpperCase(Locale.ENGLISH));
-
-        if (params != null) {
-            responseBuilder.append("|");
-            for (String param : params) {
-                responseBuilder.append(param).append("_");
-            }
-            responseBuilder.deleteCharAt(responseBuilder.length() - 1); // Remove trailing underscore
-        }
-
-        return responseBuilder.toString();
-    }
-
     private OutgoingResponse handleStart(IncomingUpdate input) {
         long telegramUserId = input.userId();
         User user;
@@ -201,9 +209,89 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
             // Sub-menus
             case MENU_EDIT_HEAVY_CAP -> new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_HEAVY_CAP", user, msgId);
             case MENU_EDIT_MAX_DAILY -> new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_MAX_DAILY", user, msgId);
-            case MENU_EDIT_WEEKLY_TARGET -> new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_WEEKLY_TARGET", user, msgId);
+            case MENU_EDIT_WEEKLY_TARGET ->
+                    new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_WEEKLY_TARGET", user, msgId);
 
             default -> null;
         };
+    }
+
+    private OutgoingResponse handleStatefulTextInput(IncomingUpdate input, String text, TelegramUserDto tgUser, User user) {
+        try {
+            switch (tgUser.state()) {
+                case WAITING_FOR_EVENT_NAME -> {
+                    // Current payload: "WORK" -> New payload: "WORK|Starbucks"
+                    String newPayload = tgUser.statePayload() + "|" + text;
+                    updateUserChatState(tgUser, ChatState.WAITING_FOR_EVENT_DAY, newPayload);
+                    return new OutgoingResponse(input.chatId(), "VIEW_ASK_EVENT_DAY", user, null);
+                }
+                case WAITING_FOR_EVENT_DAY -> {
+                    // User types "MONDAY" (or clicks a custom keyboard button)
+                    String day = text.toUpperCase(Locale.ENGLISH);
+                    String newPayload = tgUser.statePayload() + "|" + day;
+                    updateUserChatState(tgUser, ChatState.WAITING_FOR_EVENT_START, newPayload);
+                    return new OutgoingResponse(input.chatId(), "VIEW_ASK_EVENT_START", user, null);
+                }
+                case WAITING_FOR_EVENT_START -> {
+                    LocalTime startTime = LocalTime.parse(text); // e.g., "09:00"
+                    String newPayload = tgUser.statePayload() + "|" + startTime;
+                    updateUserChatState(tgUser, ChatState.WAITING_FOR_EVENT_END, newPayload);
+                    return new OutgoingResponse(input.chatId(), "VIEW_ASK_EVENT_END", user, null);
+                }
+                case WAITING_FOR_EVENT_END -> {
+                    LocalTime endTime = LocalTime.parse(text);
+
+                    // Parse the accumulated data: ["WORK", "Starbucks", "MONDAY", "09:00"]
+                    String[] data = tgUser.statePayload().split("\\|");
+                    FixedEventKind kind = FixedEventKind.valueOf(data[0]);
+                    String name = data[1];
+                    DayOfWeek day = DayOfWeek.valueOf(data[2]);
+                    LocalTime startTime = LocalTime.parse(data[3]);
+
+                    // Save to Domain!
+                    FixedEvent event = FixedEvent.createBase(user.getId(), name, kind);
+                    event.addRecurringBlock(day, TimeRange.of(startTime, endTime));
+                    fixedEventPort.save(event);
+
+                    // Reset state
+                    updateUserChatState(tgUser, ChatState.IDLE, null);
+
+                    return new OutgoingResponse(input.chatId(), "VIEW_ADD_FIXED_EVENTS", user, null);
+                }
+                default -> {
+                    return null;
+                }
+            }
+        } catch (Exception e) {
+            log.warn("User input failed validation for state [{}]. Input: {}", tgUser.state(), text);
+            // If they type "hello" instead of "09:00", we send an error view but DON'T change their state,
+            // so they can try again.
+            return new OutgoingResponse(input.chatId(), "VIEW_INVALID_INPUT_ERROR", user, null);
+        }
+    }
+
+    private void updateUserChatState(TelegramUserDto tgUser, ChatState newState, String newPayload) {
+        telegramUserRepository.save(new TelegramUserDto(
+                tgUser.userId(),
+                tgUser.telegramUserId(),
+                tgUser.chatId(),
+                newState,
+                newPayload
+        ));
+    }
+
+    private String buildViewNameWithParams(String viewName, String... params) {
+        StringBuilder responseBuilder = new StringBuilder();
+        responseBuilder.append(viewName.toUpperCase(Locale.ENGLISH));
+
+        if (params != null) {
+            responseBuilder.append("|");
+            for (String param : params) {
+                responseBuilder.append(param).append("_");
+            }
+            responseBuilder.deleteCharAt(responseBuilder.length() - 1); // Remove trailing underscore
+        }
+
+        return responseBuilder.toString();
     }
 }

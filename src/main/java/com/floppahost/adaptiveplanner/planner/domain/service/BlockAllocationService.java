@@ -4,9 +4,9 @@ package com.floppahost.adaptiveplanner.planner.domain.service;
 import com.floppahost.adaptiveplanner.planner.domain.dto.AllocationResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.BlockRef;
+import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.value.Slot;
 import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
-import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
 
 import java.time.Duration;
 import java.time.LocalDateTime;

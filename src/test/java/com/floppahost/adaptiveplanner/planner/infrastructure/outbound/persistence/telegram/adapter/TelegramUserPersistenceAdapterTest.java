@@ -1,12 +1,18 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.telegram.adapter;
 
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto.TelegramUserDto;
-import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.telegram.repository.TelegramUserJpaRepository;
+import com.floppahost.adaptiveplanner.planner.domain.model.User;
+import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.BaseIntegrationTest;
+import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.user.mapper.UserMapperImpl;
+import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.userprofile.mapper.UserProfileMapperImpl;
+import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.telegramuser.adapter.TelegramUserPersistenceAdapter;
+import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.telegramuser.repository.TelegramUserJpaRepository;
+import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.adapter.UserPersistenceAdapter;
+import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.repository.UserJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.BaseIntegrationTest;
 import org.springframework.context.annotation.Import;
 
 import java.util.Optional;
@@ -14,30 +20,46 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Import(TelegramUserPersistenceAdapter.class)
+@Import({
+        TelegramUserPersistenceAdapter.class,
+        UserPersistenceAdapter.class,
+
+        UserMapperImpl.class,
+        UserProfileMapperImpl.class
+})
 @DisplayName("TelegramUserPersistenceAdapter Integration Tests")
 class TelegramUserPersistenceAdapterTest extends BaseIntegrationTest {
 
     @Autowired
-    private TelegramUserPersistenceAdapter adapter;
+    private TelegramUserPersistenceAdapter telegramUserPersistenceAdapter;
 
     @Autowired
-    private TelegramUserJpaRepository repository;
+    private UserPersistenceAdapter userPersistenceAdapter;
+
+    @Autowired
+    private TelegramUserJpaRepository telegramUserRepository;
+
+    @Autowired
+    private UserJpaRepository userRepository;
 
     @BeforeEach
     void setUp() {
-        repository.deleteAll();
+        telegramUserRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @Test
     @DisplayName("Should save a Telegram user")
     void shouldSaveTelegramUser() {
         // Given
-        UUID userId = UUID.randomUUID();
+        User user = User.registerWithoutEmail();
+        userPersistenceAdapter.save(user);
+
+        UUID userId = user.getId();
         TelegramUserDto userDto = new TelegramUserDto(userId, 12345L, 67890L);
 
         // When
-        TelegramUserDto savedUser = adapter.save(userDto);
+        TelegramUserDto savedUser = telegramUserPersistenceAdapter.save(userDto);
 
         // Then
         assertThat(savedUser).isNotNull();
@@ -50,12 +72,16 @@ class TelegramUserPersistenceAdapterTest extends BaseIntegrationTest {
     @DisplayName("Should find a Telegram user by Telegram user ID")
     void shouldFindByTelegramUserId() {
         // Given
-        UUID userId = UUID.randomUUID();
+        User user = User.registerWithoutEmail();
+        userPersistenceAdapter.save(user);
+
+        UUID userId = user.getId();
+
         TelegramUserDto userDto = new TelegramUserDto(userId, 12345L, 67890L);
-        adapter.save(userDto);
+        telegramUserPersistenceAdapter.save(userDto);
 
         // When
-        Optional<TelegramUserDto> foundUser = adapter.findByTelegramUserId(12345L);
+        Optional<TelegramUserDto> foundUser = telegramUserPersistenceAdapter.findByTelegramUserId(12345L);
 
         // Then
         assertThat(foundUser).isPresent();
@@ -66,7 +92,7 @@ class TelegramUserPersistenceAdapterTest extends BaseIntegrationTest {
     @DisplayName("Should return empty optional when user not found")
     void shouldReturnEmptyOptionalWhenUserNotFound() {
         // When
-        Optional<TelegramUserDto> foundUser = adapter.findByTelegramUserId(99999L);
+        Optional<TelegramUserDto> foundUser = telegramUserPersistenceAdapter.findByTelegramUserId(99999L);
 
         // Then
         assertThat(foundUser).isNotPresent();
@@ -76,11 +102,16 @@ class TelegramUserPersistenceAdapterTest extends BaseIntegrationTest {
     @DisplayName("Should return true when a Telegram user is present")
     void shouldReturnTrueWhenUserIsPresent() {
         // Given
-        TelegramUserDto userDto = new TelegramUserDto(UUID.randomUUID(), 12345L, 67890L);
-        adapter.save(userDto);
+        User user = User.registerWithoutEmail();
+        userPersistenceAdapter.save(user);
+
+        UUID userId = user.getId();
+
+        TelegramUserDto userDto = new TelegramUserDto(userId, 12345L, 67890L);
+        telegramUserPersistenceAdapter.save(userDto);
 
         // When
-        boolean isPresent = adapter.isPresentByTelegramUserId(12345L);
+        boolean isPresent = telegramUserPersistenceAdapter.isPresentByTelegramUserId(12345L);
 
         // Then
         assertThat(isPresent).isTrue();
@@ -90,7 +121,7 @@ class TelegramUserPersistenceAdapterTest extends BaseIntegrationTest {
     @DisplayName("Should return false when a Telegram user is not present")
     void shouldReturnFalseWhenUserIsNotPresent() {
         // When
-        boolean isPresent = adapter.isPresentByTelegramUserId(99999L);
+        boolean isPresent = telegramUserPersistenceAdapter.isPresentByTelegramUserId(99999L);
 
         // Then
         assertThat(isPresent).isFalse();

@@ -1,7 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.domain.service;
 
 import com.floppahost.adaptiveplanner.planner.domain.model.Exam;
-import com.floppahost.adaptiveplanner.planner.domain.service.PressureService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

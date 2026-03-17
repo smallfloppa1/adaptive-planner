@@ -4,25 +4,18 @@ import com.floppahost.adaptiveplanner.planner.domain.dto.TimeGridResult;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.BlockRef;
 import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.value.FixedEventKind;
 import com.floppahost.adaptiveplanner.planner.domain.value.Slot;
-import com.floppahost.adaptiveplanner.planner.domain.value.Weekday;
+import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class TimeGridService {
-
-    /**
-     * Convert LocalDate to Weekday enum.
-     */
-    private Weekday weekdayOf(LocalDate day) {
-        return Weekday.values()[day.getDayOfWeek().getValue() - 1];
-    }
 
     /**
      * Build the day window (wake time to sleep time) for a given day.
@@ -42,7 +35,7 @@ public class TimeGridService {
             LocalDate day,
             List<FixedEvent> fixedEvents
     ) {
-        Weekday targetWeekday = weekdayOf(day);
+        DayOfWeek targetWeekday = day.getDayOfWeek();
         List<Map.Entry<FixedEvent, Slot>> result = new ArrayList<>();
 
         for (FixedEvent event : fixedEvents) {
@@ -50,13 +43,12 @@ public class TimeGridService {
                 continue;
             }
 
-            // One-time event: dtRange materialized already
             if (event.getOneTimeRange() != null) {
-                LocalDate eventDate = event.getOneTimeRange().startDateTime().toLocalDate();
+                LocalDate eventDate = event.getOneTimeRange().getStartDateTime().toLocalDate();
                 if (eventDate.equals(day)) {
                     Slot slot = new Slot(
-                            event.getOneTimeRange().startDateTime(),
-                            event.getOneTimeRange().endDateTime()
+                            event.getOneTimeRange().getStartDateTime(),
+                            event.getOneTimeRange().getEndDateTime()
                     );
                     result.add(Map.entry(event, slot));
                 }
@@ -64,9 +56,9 @@ public class TimeGridService {
             }
 
             // Recurring weekly event
-            if (event.getWeekday() == targetWeekday && event.getRecurringTimeRange() != null) {
-                LocalDateTime start = LocalDateTime.of(day, event.getRecurringTimeRange().startTime());
-                LocalDateTime end = LocalDateTime.of(day, event.getRecurringTimeRange().endTime());
+            if (event.getRecurringWeekday() == targetWeekday && event.getRecurringTimeRange() != null) {
+                LocalDateTime start = LocalDateTime.of(day, event.getRecurringTimeRange().getStartTime());
+                LocalDateTime end = LocalDateTime.of(day, event.getRecurringTimeRange().getEndTime());
                 result.add(Map.entry(event, new Slot(start, end)));
             }
         }
@@ -97,10 +89,11 @@ public class TimeGridService {
      */
     private BlockKind mapFixedEventKindToBlockKind(FixedEventKind kind) {
         return switch (kind) {
-            case CLASS, LECTURE -> BlockKind.CLASS;
+            case CLASS -> BlockKind.CLASS;
             case MEETING -> BlockKind.TASK;
             case MEAL -> BlockKind.MEAL;
-            case EXERCISE, COMMUTE, PERSONAL, OTHER -> BlockKind.OTHER;
+            //case EXERCISE, COMMUTE, PERSONAL, OTHER -> BlockKind.OTHER;
+            case OTHER -> BlockKind.OTHER;
         };
     }
 

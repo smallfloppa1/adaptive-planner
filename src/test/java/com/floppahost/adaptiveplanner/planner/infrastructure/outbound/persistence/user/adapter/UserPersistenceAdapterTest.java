@@ -2,12 +2,15 @@ package com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persisten
 
 import com.floppahost.adaptiveplanner.planner.domain.model.User;
 import com.floppahost.adaptiveplanner.planner.domain.value.Email;
-import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.user.repository.UserJpaRepository;
+import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.BaseIntegrationTest;
+import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.user.mapper.UserMapperImpl;
+import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.userprofile.mapper.UserProfileMapperImpl;
+import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.adapter.UserPersistenceAdapter;
+import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.repository.UserJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.BaseIntegrationTest;
 import org.springframework.context.annotation.Import;
 
 import java.util.Optional;
@@ -15,7 +18,12 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Import(UserPersistenceAdapter.class)
+@Import({
+        UserPersistenceAdapter.class,
+
+        UserMapperImpl.class,
+        UserProfileMapperImpl.class
+})
 @DisplayName("UserPersistenceAdapter Integration Tests")
 class UserPersistenceAdapterTest extends BaseIntegrationTest {
 
@@ -41,10 +49,10 @@ class UserPersistenceAdapterTest extends BaseIntegrationTest {
 
         // Then
         assertThat(savedUser).isNotNull();
-        assertThat(savedUser.id()).isEqualTo(user.id());
-        assertThat(savedUser.email().value()).isEqualTo("test@example.com");
+        assertThat(savedUser.getId()).isEqualTo(user.getId());
+        assertThat(savedUser.getEmail().value()).isEqualTo("test@example.com");
         assertThat(savedUser.isActive()).isTrue();
-        assertThat(savedUser.profile()).isNotNull();
+        assertThat(savedUser.getProfile()).isNotNull();
     }
 
     @Test
@@ -55,11 +63,11 @@ class UserPersistenceAdapterTest extends BaseIntegrationTest {
         adapter.save(user);
 
         // When
-        Optional<User> foundUser = adapter.findById(user.id());
+        Optional<User> foundUser = adapter.findById(user.getId());
 
         // Then
         assertThat(foundUser).isPresent();
-        assertThat(foundUser.get().id()).isEqualTo(user.id());
+        assertThat(foundUser.get().getId()).isEqualTo(user.getId());
     }
 
     @Test
@@ -78,13 +86,12 @@ class UserPersistenceAdapterTest extends BaseIntegrationTest {
         // Given
         User user = User.registerNew(new Email("test@example.com"));
         adapter.save(user);
-        assertThat(repository.findById(user.id())).isPresent();
-
+        assertThat(repository.findById(user.getId())).isPresent();
 
         // When
-        adapter.deleteById(user.id());
+        adapter.deleteById(user.getId());
 
         // Then
-        assertThat(repository.findById(user.id())).isNotPresent();
+        assertThat(repository.findById(user.getId())).isNotPresent();
     }
 }

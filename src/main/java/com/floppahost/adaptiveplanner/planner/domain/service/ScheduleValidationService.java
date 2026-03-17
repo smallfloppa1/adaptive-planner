@@ -4,8 +4,8 @@ package com.floppahost.adaptiveplanner.planner.domain.service;
 import com.floppahost.adaptiveplanner.planner.domain.exception.PlanValidationException;
 import com.floppahost.adaptiveplanner.planner.domain.model.Block;
 import com.floppahost.adaptiveplanner.planner.domain.model.DayPlan;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
+import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
