@@ -1,9 +1,13 @@
 package com.floppahost.adaptiveplanner.planner.domain.service;
 
-import com.floppahost.adaptiveplanner.planner.domain.dto.TimeGridResult;
-import com.floppahost.adaptiveplanner.planner.domain.model.Block;
-import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.value.*;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.FixedEventKind;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.TimeRange;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.TimeGridResult;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.TimeGridService;
+import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
+import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
+import com.floppahost.adaptiveplanner.planner.domain.planning.Slot;
+import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.telegram.adapter;
 
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto.TelegramUserDto;
-import com.floppahost.adaptiveplanner.planner.domain.model.User;
+import com.floppahost.adaptiveplanner.planner.domain.user.User;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.BaseIntegrationTest;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.user.mapper.UserMapperImpl;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.userprofile.mapper.UserProfileMapperImpl;
@@ -81,7 +80,7 @@ class TelegramUserPersistenceAdapterTest extends BaseIntegrationTest {
         telegramUserPersistenceAdapter.save(userDto);
 
         // When
-        Optional<TelegramUserDto> foundUser = telegramUserPersistenceAdapter.findByTelegramUserId(12345L);
+        Optional<TelegramUserDto> foundUser = telegramUserPersistenceAdapter.loadByTelegramId(12345L);
 
         // Then
         assertThat(foundUser).isPresent();
@@ -92,7 +91,7 @@ class TelegramUserPersistenceAdapterTest extends BaseIntegrationTest {
     @DisplayName("Should return empty optional when user not found")
     void shouldReturnEmptyOptionalWhenUserNotFound() {
         // When
-        Optional<TelegramUserDto> foundUser = telegramUserPersistenceAdapter.findByTelegramUserId(99999L);
+        Optional<TelegramUserDto> foundUser = telegramUserPersistenceAdapter.loadByTelegramId(99999L);
 
         // Then
         assertThat(foundUser).isNotPresent();

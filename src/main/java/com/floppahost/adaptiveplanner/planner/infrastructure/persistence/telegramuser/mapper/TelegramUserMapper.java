@@ -1,27 +1,27 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.persistence.telegramuser.mapper;
 
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto.TelegramUserDto;
+import com.floppahost.adaptiveplanner.planner.domain.telegram.TelegramUser;
 import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.telegramuser.entity.TelegramUserEntity;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-public final class TelegramUserMapper {
+@Mapper(componentModel = "spring")
+public interface TelegramUserMapper {
 
-    public static TelegramUserEntity toEntity(TelegramUserDto dto) {
-        if (dto == null) return null;
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    TelegramUserEntity toEntity(TelegramUser domain);
 
-        return new TelegramUserEntity(
-                dto.telegramUserId(),
-                dto.chatId(),
-                dto.userId()
-        );
-    }
-
-    public static TelegramUserDto toDto(TelegramUserEntity entity) {
+    default TelegramUser toDomain(TelegramUserEntity entity) {
         if (entity == null) return null;
 
-        return new TelegramUserDto(
+        return TelegramUser.rehydrate(
+                entity.getTelegramId(),
                 entity.getUserId(),
-                entity.getTelegramUserId(),
-                entity.getChatId()
+                entity.getChatId(),
+                entity.getState(),
+                entity.getStatePayload()
         );
     }
 }

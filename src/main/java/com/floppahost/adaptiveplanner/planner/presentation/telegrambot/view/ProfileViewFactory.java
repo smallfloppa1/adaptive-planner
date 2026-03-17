@@ -1,8 +1,8 @@
 package com.floppahost.adaptiveplanner.planner.presentation.telegrambot.view;
 
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingResponse;
-import com.floppahost.adaptiveplanner.planner.domain.model.User;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
+import com.floppahost.adaptiveplanner.planner.domain.user.User;
+import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import com.floppahost.adaptiveplanner.planner.presentation.telegrambot.routing.BotRoute;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;

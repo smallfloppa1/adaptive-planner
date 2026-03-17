@@ -1,12 +1,13 @@
 package com.floppahost.adaptiveplanner.planner.domain.service;
 
-import com.floppahost.adaptiveplanner.planner.domain.dto.RedistributionResult;
-import com.floppahost.adaptiveplanner.planner.domain.model.Block;
-import com.floppahost.adaptiveplanner.planner.domain.model.DayPlan;
-import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
-import com.floppahost.adaptiveplanner.planner.domain.value.BlockStatus;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.RedistributionResult;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.PlanningEngine;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.RedistributionService;
+import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
+import com.floppahost.adaptiveplanner.planner.domain.planning.DayPlan;
+import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
+import com.floppahost.adaptiveplanner.planner.domain.planning.BlockStatus;
+import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

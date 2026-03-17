@@ -1,5 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.domain.value;
 
+import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

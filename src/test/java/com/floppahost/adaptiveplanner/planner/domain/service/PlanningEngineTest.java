@@ -1,13 +1,16 @@
 package com.floppahost.adaptiveplanner.planner.domain.service;
 
-import com.floppahost.adaptiveplanner.planner.domain.dto.PlanInputs;
-import com.floppahost.adaptiveplanner.planner.domain.model.Block;
-import com.floppahost.adaptiveplanner.planner.domain.model.DayPlan;
-import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
-import com.floppahost.adaptiveplanner.planner.domain.value.FixedEventKind;
-import com.floppahost.adaptiveplanner.planner.domain.value.TimeRange;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.PlanInputs;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.BlockAllocationService;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.PlanningEngine;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.ScheduleValidationService;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.TimeGridService;
+import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
+import com.floppahost.adaptiveplanner.planner.domain.planning.DayPlan;
+import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.FixedEventKind;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.TimeRange;
+import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

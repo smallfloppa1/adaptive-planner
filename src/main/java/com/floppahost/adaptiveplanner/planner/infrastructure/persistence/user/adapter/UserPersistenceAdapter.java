@@ -1,26 +1,29 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.adapter;
 
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.userrepository.UserRepository;
-import com.floppahost.adaptiveplanner.planner.domain.model.User;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.user.DeleteUserPort;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.user.LoadUserPort;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.user.SaveUserPort;
+import com.floppahost.adaptiveplanner.planner.domain.user.User;
 import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.entity.UserEntity;
 import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.mapper.UserMapper;
 import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.repository.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
+@Component
 @RequiredArgsConstructor
-public class UserPersistenceAdapter implements UserRepository {
+public class UserPersistenceAdapter implements LoadUserPort, SaveUserPort, DeleteUserPort {
 
     private final UserJpaRepository repository;
     private final UserMapper userMapper;
 
     @Override
-    public Optional<User> findById(UUID id) {
+    public Optional<User> loadById(UUID id) {
         return repository.findById(id)
                 .map(userMapper::toDomain);
     }

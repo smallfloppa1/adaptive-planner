@@ -1,7 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.entity;
 
 import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.common.AuditableEntity;
-import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.userprofile.entity.UserProfileEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,9 +20,6 @@ public class UserEntity extends AuditableEntity {
     private UUID id;
 
     private String email;
-
-    @Column(nullable = false)
-    private boolean active;
 
     @OneToOne(
             mappedBy = "user",

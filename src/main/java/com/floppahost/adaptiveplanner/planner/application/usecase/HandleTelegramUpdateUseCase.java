@@ -3,15 +3,16 @@ package com.floppahost.adaptiveplanner.planner.application.usecase;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.HandleTelegramUpdate;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingUpdate;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingResponse;
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.TelegramUserRepository;
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto.ChatState;
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto.TelegramUserDto;
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.userrepository.UserRepository;
-import com.floppahost.adaptiveplanner.planner.domain.model.FixedEvent;
-import com.floppahost.adaptiveplanner.planner.domain.model.User;
-import com.floppahost.adaptiveplanner.planner.domain.value.FixedEventKind;
-import com.floppahost.adaptiveplanner.planner.domain.value.TimeRange;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegram.LoadTelegramUserPort;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegram.SaveTelegramUserPort;
+import com.floppahost.adaptiveplanner.planner.domain.telegram.ChatState;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.user.LoadUserPort;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.user.SaveUserPort;
+import com.floppahost.adaptiveplanner.planner.domain.telegram.TelegramUser;
+import com.floppahost.adaptiveplanner.planner.domain.user.User;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.FixedEventKind;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.TimeRange;
+import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import com.floppahost.adaptiveplanner.planner.presentation.telegrambot.routing.BotRoute;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +28,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
 
-    private final TelegramUserRepository telegramUserRepository;
-    private final UserRepository userRepository;
+    private final SaveTelegramUserPort saveTelegramUserPort;
+    private final LoadTelegramUserPort loadTelegramUserPort;
+
+    private final SaveUserPort saveUserPort;
+    private final LoadUserPort loadUserPort;
 
     @Override
     public OutgoingResponse handle(IncomingUpdate input) {
@@ -37,23 +41,21 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
         if (input.payload() == null || input.payload().isBlank()) return null;
         String payload = input.payload().trim();
 
-        // Intercept onboarding command
         if ("/start".equalsIgnoreCase(payload)) {
             log.info("Telegram user [{}] initiated /start command", input.userId());
             return handleStart(input);
         }
 
-        // Require registration for all other interactions
-        Optional<TelegramUserDto> telegramUserDtoOpt = telegramUserRepository.findByTelegramUserId(input.userId());
+        Optional<TelegramUser> telegramUserOpt = loadTelegramUserPort.loadByTelegramId(input.userId());
 
-        if (telegramUserDtoOpt.isEmpty()) {
+        if (telegramUserOpt.isEmpty()) {
             log.warn("Telegram user [{}] attempted to interact without registration", input.userId());
             return new OutgoingResponse(input.chatId(), "UNREGISTERED_ERROR", null, null);
         }
 
-        TelegramUserDto telegramUserDto = telegramUserDtoOpt.get();
+        TelegramUser telegramUser = telegramUserOpt.get();
 
-        User user = userRepository.findById(telegramUserDto.userId()).orElseThrow();
+        User user = loadUserPort.loadById(telegramUser.getUserId()).orElseThrow();
 
         // Route Callback Queries (Button Clicks)
         if (input.isCallback()) {
@@ -61,11 +63,11 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
             UserProfile currentProfile = user.getProfile();
 
             if (BotRoute.ADD_JOB_HOURS.getPayload().equals(payload)) {
-                updateUserChatState(telegramUserDto, ChatState.WAITING_FOR_EVENT_NAME, "WORK");
+                updateUserChatState(telegramUser, ChatState.WAITING_FOR_EVENT_NAME, "WORK");
                 return new OutgoingResponse(input.chatId(), "VIEW_ASK_EVENT_NAME", user, messageId);
             }
             if (BotRoute.ADD_UNI_CLASS.getPayload().equals(payload)) {
-                updateUserChatState(telegramUserDto, ChatState.WAITING_FOR_EVENT_NAME, "UNI_CLASS");
+                updateUserChatState(telegramUser, ChatState.WAITING_FOR_EVENT_NAME, "UNI_CLASS");
                 return new OutgoingResponse(input.chatId(), "VIEW_ASK_EVENT_NAME", user, messageId);
             }
 
@@ -91,7 +93,7 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
                 LocalTime newSleep = LocalTime.parse(parts[1]);
 
                 user.updateSleepWindow(newWake, newSleep, currentProfile.minSleepHours());
-                userRepository.save(user);
+                saveUserPort.save(user);
 
                 return new OutgoingResponse(
                         input.chatId(),
@@ -112,7 +114,7 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
                 String breakMinutesStr = parts[1];
 
                 user.updateFocusCycle(Integer.parseInt(focusMinutesStr), Integer.parseInt(breakMinutesStr));
-                userRepository.save(user);
+                saveUserPort.save(user);
 
                 return new OutgoingResponse(
                         input.chatId(),
@@ -129,7 +131,7 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
                 int maxHeavyBlocks = Integer.parseInt(rawData);
 
                 user.updateMaxHeavyBlocksPerDay(maxHeavyBlocks);
-                userRepository.save(user);
+                saveUserPort.save(user);
 
                 return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_CAPS", user, messageId);
             }
@@ -140,7 +142,7 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
                 int dailyLoadMinutes = Integer.parseInt(rawData);
 
                 user.updateMaxDailyLoadMinutes(dailyLoadMinutes);
-                userRepository.save(user);
+                saveUserPort.save(user);
 
                 return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_CAPS", user, messageId);
             }
@@ -152,14 +154,14 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
                 int targetMinutes = Integer.parseInt(rawData);
 
                 user.updateWeeklyTargetMinutes(targetMinutes);
-                userRepository.save(user);
+                saveUserPort.save(user);
 
                 return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_GOALS", user, messageId);
             }
 
             if (BotRoute.TOGGLE_STRICT_ENFORCEMENT.getPayload().equals(payload)) {
                 user.toggleStrictEnforcement();
-                userRepository.save(user);
+                saveUserPort.save(user);
 
                 return new OutgoingResponse(input.chatId(), "VIEW_SETTINGS_GOALS", user, messageId);
             }
@@ -176,21 +178,33 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
     }
 
     private OutgoingResponse handleStart(IncomingUpdate input) {
-        long telegramUserId = input.userId();
-        User user;
+        return loadTelegramUserPort.loadByTelegramId(input.userId())
+                .map(tgUser -> syncExistingUser(input, tgUser))
+                .orElseGet(() -> registerNewUser(input));
+    }
 
-        if (telegramUserRepository.isPresentByTelegramUserId(telegramUserId)) {
-            TelegramUserDto tgUser = telegramUserRepository.findByTelegramUserId(telegramUserId).get();
-            user = userRepository.findById(tgUser.userId()).get();
-        } else {
-            user = User.registerWithoutEmail();
-            userRepository.save(user);
+    private OutgoingResponse syncExistingUser(IncomingUpdate input, TelegramUser tgUser) {
+        return loadUserPort.loadById(tgUser.getUserId())
+                .map(user -> new OutgoingResponse(input.chatId(), "VIEW_WELCOME", user, null))
+                .orElseGet(() -> {
+                    log.error("Data Integrity Breach: TelegramUser {} has no User {}",
+                            tgUser.getTelegramId(), tgUser.getUserId());
+                    return new OutgoingResponse(input.chatId(), "SYSTEM_ERROR_UNSYNCED", null, null);
+                });
+    }
 
-            TelegramUserDto telegramUser = new TelegramUserDto(user.getId(), telegramUserId, input.chatId());
-            telegramUserRepository.save(telegramUser);
-        }
+    private OutgoingResponse registerNewUser(IncomingUpdate input) {
+        User newUser = User.registerWithoutEmail();
+        saveUserPort.save(newUser);
 
-        return new OutgoingResponse(input.chatId(), "VIEW_WELCOME", user, null);
+        TelegramUser newTgUser = TelegramUser.create(
+                input.userId(),
+                newUser.getId(),
+                input.chatId()
+        );
+        saveTelegramUserPort.save(newTgUser);
+
+        return new OutgoingResponse(input.chatId(), "VIEW_WELCOME", newUser, null);
     }
 
     private OutgoingResponse handleMenuNavigation(BotRoute route, User user, IncomingUpdate input) {
@@ -216,33 +230,32 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
         };
     }
 
-    private OutgoingResponse handleStatefulTextInput(IncomingUpdate input, String text, TelegramUserDto tgUser, User user) {
+    private OutgoingResponse handleStatefulTextInput(IncomingUpdate input, String text, TelegramUser tgUser, User user) {
         try {
-            switch (tgUser.state()) {
+            switch (tgUser.getState()) {
                 case WAITING_FOR_EVENT_NAME -> {
                     // Current payload: "WORK" -> New payload: "WORK|Starbucks"
-                    String newPayload = tgUser.statePayload() + "|" + text;
+                    String newPayload = tgUser.getStatePayload() + "|" + text;
                     updateUserChatState(tgUser, ChatState.WAITING_FOR_EVENT_DAY, newPayload);
                     return new OutgoingResponse(input.chatId(), "VIEW_ASK_EVENT_DAY", user, null);
                 }
                 case WAITING_FOR_EVENT_DAY -> {
                     // User types "MONDAY" (or clicks a custom keyboard button)
                     String day = text.toUpperCase(Locale.ENGLISH);
-                    String newPayload = tgUser.statePayload() + "|" + day;
+                    String newPayload = tgUser.getStatePayload() + "|" + day;
                     updateUserChatState(tgUser, ChatState.WAITING_FOR_EVENT_START, newPayload);
                     return new OutgoingResponse(input.chatId(), "VIEW_ASK_EVENT_START", user, null);
                 }
                 case WAITING_FOR_EVENT_START -> {
                     LocalTime startTime = LocalTime.parse(text); // e.g., "09:00"
-                    String newPayload = tgUser.statePayload() + "|" + startTime;
+                    String newPayload = tgUser.getStatePayload() + "|" + startTime;
                     updateUserChatState(tgUser, ChatState.WAITING_FOR_EVENT_END, newPayload);
                     return new OutgoingResponse(input.chatId(), "VIEW_ASK_EVENT_END", user, null);
                 }
                 case WAITING_FOR_EVENT_END -> {
                     LocalTime endTime = LocalTime.parse(text);
 
-                    // Parse the accumulated data: ["WORK", "Starbucks", "MONDAY", "09:00"]
-                    String[] data = tgUser.statePayload().split("\\|");
+                    String[] data = tgUser.getStatePayload().split("\\|");
                     FixedEventKind kind = FixedEventKind.valueOf(data[0]);
                     String name = data[1];
                     DayOfWeek day = DayOfWeek.valueOf(data[2]);
@@ -270,14 +283,9 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
         }
     }
 
-    private void updateUserChatState(TelegramUserDto tgUser, ChatState newState, String newPayload) {
-        telegramUserRepository.save(new TelegramUserDto(
-                tgUser.userId(),
-                tgUser.telegramUserId(),
-                tgUser.chatId(),
-                newState,
-                newPayload
-        ));
+    private void updateUserChatState(TelegramUser tgUser, ChatState newState, String newPayload) {
+        tgUser.transitionTo(newState, newPayload);
+        saveTelegramUserPort.save(tgUser);
     }
 
     private String buildViewNameWithParams(String viewName, String... params) {

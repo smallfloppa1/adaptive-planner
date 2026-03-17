@@ -1,7 +1,7 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.user.adapter;
 
-import com.floppahost.adaptiveplanner.planner.domain.model.User;
-import com.floppahost.adaptiveplanner.planner.domain.value.Email;
+import com.floppahost.adaptiveplanner.planner.domain.user.User;
+import com.floppahost.adaptiveplanner.planner.domain.user.Email;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.BaseIntegrationTest;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.user.mapper.UserMapperImpl;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.userprofile.mapper.UserProfileMapperImpl;
@@ -63,7 +63,7 @@ class UserPersistenceAdapterTest extends BaseIntegrationTest {
         adapter.save(user);
 
         // When
-        Optional<User> foundUser = adapter.findById(user.getId());
+        Optional<User> foundUser = adapter.loadById(user.getId());
 
         // Then
         assertThat(foundUser).isPresent();
@@ -74,7 +74,7 @@ class UserPersistenceAdapterTest extends BaseIntegrationTest {
     @DisplayName("Should return empty optional when user not found by ID")
     void shouldReturnEmptyOptionalWhenUserNotFoundById() {
         // When
-        Optional<User> foundUser = adapter.findById(UUID.randomUUID());
+        Optional<User> foundUser = adapter.loadById(UUID.randomUUID());
 
         // Then
         assertThat(foundUser).isNotPresent();

@@ -1,10 +1,11 @@
 package com.floppahost.adaptiveplanner.planner.domain.service;
 
-import com.floppahost.adaptiveplanner.planner.domain.dto.AllocationResult;
-import com.floppahost.adaptiveplanner.planner.domain.model.Block;
-import com.floppahost.adaptiveplanner.planner.domain.value.BlockKind;
-import com.floppahost.adaptiveplanner.planner.domain.value.Slot;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.AllocationResult;
+import com.floppahost.adaptiveplanner.planner.domain.planning.engine.BlockAllocationService;
+import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
+import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
+import com.floppahost.adaptiveplanner.planner.domain.planning.Slot;
+import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

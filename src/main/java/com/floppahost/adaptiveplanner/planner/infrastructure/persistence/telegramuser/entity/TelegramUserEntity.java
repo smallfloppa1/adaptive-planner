@@ -1,6 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.persistence.telegramuser.entity;
 
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegramuserrepository.dto.ChatState;
+import com.floppahost.adaptiveplanner.planner.domain.telegram.ChatState;
 import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.common.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,13 +20,13 @@ public class TelegramUserEntity extends AuditableEntity {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private Long telegramUserId;
-
-    @Column(nullable = false)
-    private Long chatId;
+    private Long telegramId;
 
     @Column(nullable = false, unique = true)
     private UUID userId;
+
+    @Column(nullable = false)
+    private Long chatId;
 
     @Column(name = "chat_state")
     @Enumerated(EnumType.STRING)
@@ -34,9 +34,11 @@ public class TelegramUserEntity extends AuditableEntity {
 
     private String statePayload;
 
-    public TelegramUserEntity(Long telegramUserId, Long chatId, UUID userId) {
-        this.telegramUserId = telegramUserId;
-        this.chatId = chatId;
+    public TelegramUserEntity(Long telegramId, UUID userId, Long chatId, ChatState state, String statePayload) {
+        this.telegramId = telegramId;
         this.userId = userId;
+        this.chatId = chatId;
+        this.state = state;
+        this.statePayload = statePayload;
     }
 }

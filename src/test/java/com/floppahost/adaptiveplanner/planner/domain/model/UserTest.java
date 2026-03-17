@@ -1,7 +1,8 @@
 package com.floppahost.adaptiveplanner.planner.domain.model;
 
-import com.floppahost.adaptiveplanner.planner.domain.value.Email;
-import com.floppahost.adaptiveplanner.planner.domain.value.UserProfile;
+import com.floppahost.adaptiveplanner.planner.domain.user.User;
+import com.floppahost.adaptiveplanner.planner.domain.user.Email;
+import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
