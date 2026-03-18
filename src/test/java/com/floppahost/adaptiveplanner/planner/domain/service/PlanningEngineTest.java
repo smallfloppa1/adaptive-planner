@@ -8,7 +8,7 @@ import com.floppahost.adaptiveplanner.planner.domain.planning.engine.TimeGridSer
 import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
 import com.floppahost.adaptiveplanner.planner.domain.planning.DayPlan;
 import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
-import com.floppahost.adaptiveplanner.planner.domain.calendar.FixedEventKind;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.EventKind;
 import com.floppahost.adaptiveplanner.planner.domain.calendar.TimeRange;
 import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +32,7 @@ class PlanningEngineTest {
     private UserProfile profile;
     private UUID userId;
     private LocalDate monday;
-    private FixedEventKind defaultEventKind;
+    private EventKind defaultEventKind;
 
     @BeforeEach
     void setUp() {
@@ -48,7 +48,7 @@ class PlanningEngineTest {
 
         userId = UUID.randomUUID();
         monday = LocalDate.of(2024, 2, 19);
-        defaultEventKind = FixedEventKind.OTHER;
+        defaultEventKind = EventKind.OTHER;
 
         profile = new UserProfile(
                 LocalTime.of(7, 0),
@@ -90,7 +90,7 @@ class PlanningEngineTest {
     void shouldGeneratePlanWithFixedEventsAndStudy() {
         FixedEvent morningClass = FixedEvent.builder()
                 .userId(userId)
-                .kind(FixedEventKind.CLASS)
+                .kind(EventKind.CLASS)
                 .title("Math Class")
                 .weekday(DayOfWeek.MONDAY)
                 .recurringTimeRange(new TimeRange(
@@ -349,7 +349,7 @@ class PlanningEngineTest {
     void shouldHandleInactiveFixedEvents() {
         FixedEvent inactiveEvent = FixedEvent.builder()
                 .userId(userId)
-                .kind(FixedEventKind.CLASS)
+                .kind(EventKind.CLASS)
                 .title("Cancelled Class")
                 .weekday(DayOfWeek.MONDAY)
                 .recurringTimeRange(new TimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0)))

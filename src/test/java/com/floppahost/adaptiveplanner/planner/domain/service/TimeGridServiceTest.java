@@ -1,6 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.domain.service;
 
-import com.floppahost.adaptiveplanner.planner.domain.calendar.FixedEventKind;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.EventKind;
 import com.floppahost.adaptiveplanner.planner.domain.calendar.TimeRange;
 import com.floppahost.adaptiveplanner.planner.domain.planning.engine.TimeGridResult;
 import com.floppahost.adaptiveplanner.planner.domain.planning.engine.TimeGridService;
@@ -65,7 +65,7 @@ class TimeGridServiceTest {
     void shouldExpandRecurringEvent() {
         FixedEvent event = FixedEvent.builder()
                 .userId(userId)
-                .kind(FixedEventKind.CLASS)
+                .kind(EventKind.CLASS)
                 .title("Math")
                 .weekday(DayOfWeek.MONDAY)
                 .recurringTimeRange(new TimeRange(
@@ -89,7 +89,7 @@ class TimeGridServiceTest {
         FixedEvent event = FixedEvent.builder()
                 .id(UUID.randomUUID())
                 .userId(userId)
-                .kind(FixedEventKind.CLASS)
+                .kind(EventKind.CLASS)
                 .title("Physics")
                 .weekday(DayOfWeek.MONDAY)
                 .recurringTimeRange(new TimeRange(
@@ -116,7 +116,7 @@ class TimeGridServiceTest {
     void shouldComputeFreeSlots() {
         FixedEvent event = FixedEvent.builder()
                 .userId(userId)
-                .kind(FixedEventKind.CLASS)
+                .kind(EventKind.CLASS)
                 .title("Math")
                 .weekday(DayOfWeek.MONDAY)
                 .recurringTimeRange(new TimeRange(
@@ -176,7 +176,7 @@ class TimeGridServiceTest {
     private FixedEvent createEvent(int sh, int sm, int eh, int em) {
         return FixedEvent.builder()
                 .userId(userId)
-                .kind(FixedEventKind.CLASS)
+                .kind(EventKind.CLASS)
                 .title("Event")
                 .weekday(DayOfWeek.MONDAY)
                 .recurringTimeRange(new TimeRange(

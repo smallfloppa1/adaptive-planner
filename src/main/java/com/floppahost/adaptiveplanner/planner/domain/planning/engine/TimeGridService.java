@@ -3,7 +3,7 @@ package com.floppahost.adaptiveplanner.planner.domain.planning.engine;
 import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
 import com.floppahost.adaptiveplanner.planner.domain.planning.BlockRef;
 import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
-import com.floppahost.adaptiveplanner.planner.domain.calendar.FixedEventKind;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.EventKind;
 import com.floppahost.adaptiveplanner.planner.domain.planning.Slot;
 import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 
@@ -85,7 +85,7 @@ public class TimeGridService {
     /**
      * Map FixedEventKind to BlockKind.
      */
-    private BlockKind mapFixedEventKindToBlockKind(FixedEventKind kind) {
+    private BlockKind mapFixedEventKindToBlockKind(EventKind kind) {
         return switch (kind) {
             case CLASS -> BlockKind.CLASS;
             case MEETING -> BlockKind.TASK;

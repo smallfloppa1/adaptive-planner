@@ -3,14 +3,16 @@ package com.floppahost.adaptiveplanner.planner.application.usecase;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.HandleTelegramUpdate;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingUpdate;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingResponse;
+import com.floppahost.adaptiveplanner.planner.application.port.outbound.calendar.recurringevent.SaveRecurringEventPort;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegram.LoadTelegramUserPort;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegram.SaveTelegramUserPort;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.RecurringEvent;
 import com.floppahost.adaptiveplanner.planner.domain.telegram.ChatState;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.user.LoadUserPort;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.user.SaveUserPort;
 import com.floppahost.adaptiveplanner.planner.domain.telegram.TelegramUser;
 import com.floppahost.adaptiveplanner.planner.domain.user.User;
-import com.floppahost.adaptiveplanner.planner.domain.calendar.FixedEventKind;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.EventKind;
 import com.floppahost.adaptiveplanner.planner.domain.calendar.TimeRange;
 import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import com.floppahost.adaptiveplanner.planner.presentation.telegrambot.routing.BotRoute;
@@ -28,11 +30,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
 
+    private final SaveUserPort saveUserPort;
+    private final LoadUserPort loadUserPort;
+
     private final SaveTelegramUserPort saveTelegramUserPort;
     private final LoadTelegramUserPort loadTelegramUserPort;
 
-    private final SaveUserPort saveUserPort;
-    private final LoadUserPort loadUserPort;
+    private final SaveRecurringEventPort saveRecurringEventPort;
+
+
 
     @Override
     public OutgoingResponse handle(IncomingUpdate input) {
@@ -256,15 +262,16 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
                     LocalTime endTime = LocalTime.parse(text);
 
                     String[] data = tgUser.getStatePayload().split("\\|");
-                    FixedEventKind kind = FixedEventKind.valueOf(data[0]);
+                    EventKind kind = EventKind.valueOf(data[0]);
                     String name = data[1];
                     DayOfWeek day = DayOfWeek.valueOf(data[2]);
                     LocalTime startTime = LocalTime.parse(data[3]);
 
                     // Save to Domain!
-                    FixedEvent event = FixedEvent.createBase(user.getId(), name, kind);
-                    event.addRecurringBlock(day, TimeRange.of(startTime, endTime));
-                    fixedEventPort.save(event);
+                    RecurringEvent event = RecurringEvent.create(user.getId(), name, kind);
+                    event.addBlock(day, TimeRange.of(startTime, endTime));
+
+                    saveRecurringEventPort.save(event);
 
                     // Reset state
                     updateUserChatState(tgUser, ChatState.IDLE, null);
@@ -276,7 +283,7 @@ public class HandleTelegramUpdateUseCase implements HandleTelegramUpdate {
                 }
             }
         } catch (Exception e) {
-            log.warn("User input failed validation for state [{}]. Input: {}", tgUser.state(), text);
+            log.warn("User input failed validation for state [{}]. Input: {}", tgUser.getState(), text);
             // If they type "hello" instead of "09:00", we send an error view but DON'T change their state,
             // so they can try again.
             return new OutgoingResponse(input.chatId(), "VIEW_INVALID_INPUT_ERROR", user, null);

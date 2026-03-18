@@ -10,12 +10,12 @@ public class RecurringEvent extends BaseEvent {
 
     private final List<RecurringBlock> blocks;
 
-    private RecurringEvent(UUID id, UUID userId, String title, FixedEventKind kind) {
+    private RecurringEvent(UUID id, UUID userId, String title, EventKind kind) {
         super(id, userId, title, kind);
         this.blocks = new ArrayList<>();
     }
 
-    public static RecurringEvent create(UUID userId, String title, FixedEventKind kind) {
+    public static RecurringEvent create(UUID userId, String title, EventKind kind) {
         return new RecurringEvent(UUID.randomUUID(), userId, title, kind);
     }
 

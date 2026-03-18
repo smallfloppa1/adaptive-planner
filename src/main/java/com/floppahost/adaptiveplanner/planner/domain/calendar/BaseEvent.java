@@ -9,11 +9,11 @@ public abstract class BaseEvent {
     private final UUID id;
     private final UUID userId;
     private String title;
-    private FixedEventKind kind;
+    private EventKind kind;
     private String location;
     private String notes;
 
-    protected BaseEvent(UUID id, UUID userId, String title, FixedEventKind kind) {
+    protected BaseEvent(UUID id, UUID userId, String title, EventKind kind) {
         this.id = id;
         this.userId = userId;
         this.title = title;

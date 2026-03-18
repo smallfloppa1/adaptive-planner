@@ -1,6 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.persistence.calendar.entity;
 
-import com.floppahost.adaptiveplanner.planner.domain.calendar.FixedEventKind;
+import com.floppahost.adaptiveplanner.planner.domain.calendar.EventKind;
 import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.common.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,7 +30,7 @@ public abstract class BaseEventEntity extends AuditableEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private FixedEventKind kind;
+    private EventKind kind;
 
     private String location;
 
