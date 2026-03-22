@@ -16,19 +16,6 @@ import java.util.UUID;
 
 public class BlockAllocationService {
 
-    private static final Set<BlockKind> FLEX_KINDS = Set.of(
-        BlockKind.STUDY,
-        BlockKind.TASK,
-        BlockKind.PROGRAM,
-        BlockKind.BREAK
-    );
-
-    private static final Set<BlockKind> HEAVY_KINDS = Set.of(
-        BlockKind.STUDY,
-        BlockKind.TASK,
-        BlockKind.PROGRAM
-    );
-
     public AllocationResult allocateStudyBlocks(
             UUID userId,
             UserProfile profile,
@@ -36,8 +23,9 @@ public class BlockAllocationService {
             int targetStudyMinutes,
             UUID subjectId
     ) {
-        
+
         List<Block> blocks = new ArrayList<>();
+        int achievedStudyMinutes = 0;
         int usedFlexMinutes = 0;
         int heavyBlocksUsed = 0;
 
@@ -51,22 +39,23 @@ public class BlockAllocationService {
         for (Slot slot : freeSlots) {
             LocalDateTime cursor = slot.start();
 
-            while (usedFlexMinutes < target) {
-                // Check heavy blocks limit
+            while (achievedStudyMinutes < target && usedFlexMinutes < flexCap) {
+
                 if (heavyBlocksUsed >= maxHeavy) {
                     return new AllocationResult(blocks, usedFlexMinutes, heavyBlocksUsed);
                 }
 
-                // Try to fit a focus block
-                LocalDateTime focusEnd = cursor.plus(Duration.ofMinutes(focusMinutes));
+                int currentFocusMinutes = Math.min(focusMinutes, target - achievedStudyMinutes);
+                currentFocusMinutes = Math.min(currentFocusMinutes, flexCap - usedFlexMinutes);
+
+                LocalDateTime focusEnd = cursor.plus(Duration.ofMinutes(currentFocusMinutes));
                 if (focusEnd.isAfter(slot.end())) {
                     break;
                 }
 
-                // Create study block
-                BlockRef ref = subjectId != null 
-                    ? new BlockRef.ForSubject(subjectId)
-                    : new BlockRef.Empty();
+                BlockRef ref = subjectId != null
+                        ? new BlockRef.ForSubject(subjectId)
+                        : new BlockRef.Empty();
 
                 blocks.add(Block.create(
                         userId,
@@ -76,19 +65,17 @@ public class BlockAllocationService {
                         ref
                 ));
 
-                usedFlexMinutes += focusMinutes;
+                achievedStudyMinutes += currentFocusMinutes;
+                usedFlexMinutes += currentFocusMinutes;
                 heavyBlocksUsed++;
                 cursor = focusEnd;
 
-                // Try to add a break block
-                if (breakMinutes > 0 && usedFlexMinutes < target) {
-                    LocalDateTime breakEnd = cursor.plus(Duration.ofMinutes(breakMinutes));
-                    
+                if (breakMinutes > 0 && achievedStudyMinutes < target && usedFlexMinutes < flexCap) {
+
+                    int currentBreakMinutes = Math.min(breakMinutes, flexCap - usedFlexMinutes);
+                    LocalDateTime breakEnd = cursor.plus(Duration.ofMinutes(currentBreakMinutes));
+
                     if (breakEnd.isAfter(slot.end())) {
-                        break;
-                    }
-                    
-                    if (usedFlexMinutes + breakMinutes > flexCap) {
                         break;
                     }
 
@@ -100,12 +87,12 @@ public class BlockAllocationService {
                             new BlockRef.Empty()
                     ));
 
-                    usedFlexMinutes += breakMinutes;
+                    usedFlexMinutes += currentBreakMinutes;
                     cursor = breakEnd;
                 }
             }
 
-            if (usedFlexMinutes >= target) {
+            if (achievedStudyMinutes >= target || usedFlexMinutes >= flexCap) {
                 break;
             }
         }

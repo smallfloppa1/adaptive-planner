@@ -1,6 +1,5 @@
 package com.floppahost.adaptiveplanner.planner.domain.planning.engine;
 
-
 import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
 import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.planning.DayPlan;
@@ -31,7 +30,6 @@ public class ScheduleValidationService {
         LocalDateTime windowStart = LocalDateTime.of(plan.date(), profile.wakeTime());
         LocalDateTime windowEnd = LocalDateTime.of(plan.date(), profile.sleepTime());
 
-        // Optional: support sleep after midnight
         if (windowEnd.isBefore(windowStart)) {
             windowEnd = windowEnd.plusDays(1);
         }
@@ -44,8 +42,10 @@ public class ScheduleValidationService {
         int heavyCount = 0;
         int flexMinutes = 0;
 
+        LocalDateTimeRange dayWindow = LocalDateTimeRange.of(windowStart, windowEnd);
+
         for (Block block : blocks) {
-            if (block.getTimeRange().isWithin(LocalDateTimeRange.of(windowStart, windowEnd))) {
+            if (!block.getTimeRange().isWithin(dayWindow)) {
                 throw new PlanValidationException("Block outside planning window.");
             }
 

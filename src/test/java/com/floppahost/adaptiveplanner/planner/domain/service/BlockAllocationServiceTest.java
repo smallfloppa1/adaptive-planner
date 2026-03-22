@@ -22,48 +22,55 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("BlockAllocationService Tests")
 class BlockAllocationServiceTest {
 
-    private BlockAllocationService allocator;
+    private BlockAllocationService allocator = new BlockAllocationService();
     private UserProfile profile;
-    private UUID userId;
-    private UUID subjectId;
-    private LocalDate testDay;
-    private ZoneId timezone;
+    private UUID userId = UUID.fromString("5daaa33e-2bd5-47ea-a097-6b1e2e40448a");
+    private UUID subjectId = UUID.fromString("b3181734-f174-4c8d-9151-ef48b604cb13");
+    private LocalDate testDay = LocalDate.of(2024, 2, 19);
 
     @BeforeEach
     void setUp() {
-        allocator = new BlockAllocationService();
-        userId = UUID.randomUUID();
-        subjectId = UUID.randomUUID();
-        testDay = LocalDate.of(2024, 2, 19);
-        timezone = ZoneId.of("Europe/Warsaw");
+        LocalTime wakeTime = LocalTime.of(7, 0);
+        LocalTime sleepTime = LocalTime.of(23, 0);
+        double minSleepHours = 7;
+        int morningRoutineMinutes = 60;
+        int eveningRoutineMinutes = 60;
+        int focusMinutes = 40;
+        int breakMinutes = 10;
+        int maxHeavyBlocksPerDay = 3;
+        int maxTotalPlannedMinutesPerDay = 8 * 60;
+        int weeklyStudyTargetMinutes = 10 * 60;
+        boolean strictEnforcement = true;
 
         profile = new UserProfile(
-                LocalTime.of(7, 0),
-                LocalTime.of(23, 0),
-                7.0,
-                40,
-                10,
-                6,
-                8 * 60,
-                10 * 60,
-                true
+                wakeTime,
+                sleepTime,
+                minSleepHours,
+                morningRoutineMinutes,
+                eveningRoutineMinutes,
+                focusMinutes,
+                breakMinutes,
+                maxHeavyBlocksPerDay,
+                maxTotalPlannedMinutesPerDay,
+                weeklyStudyTargetMinutes,
+                strictEnforcement
         );
     }
 
     @Test
     @DisplayName("Should allocate study and break blocks in single free slot")
     void shouldAllocateStudyAndBreakBlocks() {
-        // Given - 4 hour free slot
+        // Given
         List<Slot> freeSlots = List.of(
-            createSlot(9, 0, 13, 0) // 240 minutes
+            createSlot(9, 0, 13, 0)
         );
 
-        // When - Request 200 minutes
+        // When
         AllocationResult result = allocator.allocateStudyBlocks(
             userId, profile, freeSlots, 200, null
         );
 
-        // Then - Should allocate 4 focus blocks (40 min each) + 4 breaks (10 min each)
+        // Then
         assertThat(result.blocks()).hasSize(8);
         assertThat(result.usedFlexibleMinutes()).isEqualTo(200); // 160 study + 40 break
         assertThat(result.heavyBlocksUsed()).isEqualTo(4);
@@ -71,10 +78,8 @@ class BlockAllocationServiceTest {
         // Verify alternating pattern
         List<Block> blocks = result.blocks();
         for (int i = 0; i < blocks.size(); i += 2) {
-            assertThat(blocks.get(i).kind()).isEqualTo(BlockKind.STUDY);
-            if (i + 1 < blocks.size()) {
-                assertThat(blocks.get(i + 1).kind()).isEqualTo(BlockKind.BREAK);
-            }
+            assertThat(blocks.get(i).getKind()).isEqualTo(BlockKind.STUDY);
+            assertThat(blocks.get(i + 1).getKind()).isEqualTo(BlockKind.BREAK);
         }
     }
 
@@ -97,7 +102,7 @@ class BlockAllocationServiceTest {
         assertThat(result.heavyBlocksUsed()).isEqualTo(2);
         
         long studyBlocks = result.blocks().stream()
-            .filter(b -> b.kind() == BlockKind.STUDY)
+            .filter(b -> b.getKind() == BlockKind.STUDY)
             .count();
         assertThat(studyBlocks).isEqualTo(2);
     }
@@ -141,7 +146,7 @@ class BlockAllocationServiceTest {
         
         // Verify blocks span across time gaps
         List<LocalDateTime> startTimes = result.blocks().stream()
-            .map(Block::startsAt)
+            .map(b -> b.getTimeRange().getStart())
             .sorted()
             .toList();
         
@@ -182,7 +187,7 @@ class BlockAllocationServiceTest {
 
         // Then - Should allocate study block but no break
         assertThat(result.blocks()).hasSize(1);
-        assertThat(result.blocks().getFirst().kind()).isEqualTo(BlockKind.STUDY);
+        assertThat(result.blocks().getFirst().getKind()).isEqualTo(BlockKind.STUDY);
         assertThat(result.usedFlexibleMinutes()).isEqualTo(40);
     }
 
@@ -201,11 +206,11 @@ class BlockAllocationServiceTest {
 
         // Then
         List<Block> studyBlocks = result.blocks().stream()
-            .filter(b -> b.kind() == BlockKind.STUDY)
+            .filter(b -> b.getKind() == BlockKind.STUDY)
             .toList();
 
         assertThat(studyBlocks).isNotEmpty();
-        assertThat(studyBlocks.getFirst().ref().getSubjectId()).isEqualTo(subjectId);
+        assertThat(studyBlocks.getFirst().getRef().getSubjectId()).isEqualTo(subjectId);
     }
 
     @Test
@@ -223,7 +228,7 @@ class BlockAllocationServiceTest {
 
         // Then
         List<Block> studyBlocks = result.blocks().stream()
-            .filter(b -> b.kind() == BlockKind.STUDY)
+            .filter(b -> b.getKind() == BlockKind.STUDY)
             .toList();
 
         assertThat(studyBlocks).isNotEmpty();
@@ -248,7 +253,7 @@ class BlockAllocationServiceTest {
         );
 
         // Then - Should only have study blocks, no breaks
-        assertThat(result.blocks()).allMatch(b -> b.kind() == BlockKind.STUDY);
+        assertThat(result.blocks()).allMatch(b -> b.getKind() == BlockKind.STUDY);
         assertThat(result.blocks()).hasSize(2); // Two 40-min blocks
     }
 
@@ -335,7 +340,7 @@ class BlockAllocationServiceTest {
         );
 
         // Then
-        assertThat(result.blocks()).allMatch(b -> b.userId().equals(userId));
+        assertThat(result.blocks()).allMatch(b -> b.getUserId().equals(userId));
     }
 
     @Test
@@ -356,8 +361,8 @@ class BlockAllocationServiceTest {
         for (int i = 0; i < blocks.size() - 1; i++) {
             Block current = blocks.get(i);
             Block next = blocks.get(i + 1);
-            assertThat(current.endsAt())
-                .isBeforeOrEqualTo(next.startsAt());
+            assertThat(current.getTimeRange().getEnd())
+                .isBeforeOrEqualTo(next.getTimeRange().getStart());
         }
     }
 
@@ -375,8 +380,8 @@ class BlockAllocationServiceTest {
 
         // Then - All blocks should be within slot
         assertThat(result.blocks()).allMatch(block ->
-            !block.startsAt().isBefore(slot.start()) &&
-            !block.endsAt().isAfter(slot.end())
+            !block.getTimeRange().getStart().isBefore(slot.start()) &&
+            !block.getTimeRange().getEnd().isAfter(slot.end())
         );
     }
 

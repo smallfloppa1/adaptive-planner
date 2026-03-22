@@ -4,7 +4,6 @@ import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.calenda
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,6 +12,4 @@ public interface OneTimeEventJpaRepository extends JpaRepository<OneTimeEventEnt
 
     List<OneTimeEventEntity> findAllByUserId(UUID userId);
 
-    List<OneTimeEventEntity> findAllByUserIdAndDate(UUID userId, LocalDate date);
-    
 }

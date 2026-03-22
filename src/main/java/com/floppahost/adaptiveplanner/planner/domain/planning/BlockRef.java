@@ -3,10 +3,6 @@ package com.floppahost.adaptiveplanner.planner.domain.planning;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Reference to the thing a Block represents.
- * Keep refs optional because different BlockKind uses different refs.
- */
 public sealed interface BlockRef {
 
     record Empty() implements BlockRef {}
