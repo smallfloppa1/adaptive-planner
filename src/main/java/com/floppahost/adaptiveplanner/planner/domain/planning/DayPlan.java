@@ -33,7 +33,7 @@ public class DayPlan {
             return 1.0;
         }
         long done = blocks.stream()
-                .filter(block -> block.getStatus() == BlockStatus.DONE)
+                .filter(block -> block.status() == BlockStatus.DONE)
                 .count();
         return (double) done / blocks.size();
     }

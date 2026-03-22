@@ -1,7 +1,7 @@
 package com.floppahost.adaptiveplanner.planner.domain.service;
 
 import com.floppahost.adaptiveplanner.planner.domain.calendar.EventKind;
-import com.floppahost.adaptiveplanner.planner.domain.calendar.TimeRange;
+import com.floppahost.adaptiveplanner.planner.domain.shared.LocalTimeRange;
 import com.floppahost.adaptiveplanner.planner.domain.planning.engine.TimeGridResult;
 import com.floppahost.adaptiveplanner.planner.domain.planning.engine.TimeGridService;
 import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
@@ -68,7 +68,7 @@ class TimeGridServiceTest {
                 .kind(EventKind.CLASS)
                 .title("Math")
                 .weekday(DayOfWeek.MONDAY)
-                .recurringTimeRange(new TimeRange(
+                .recurringTimeRange(new LocalTimeRange(
                         LocalTime.of(9, 0),
                         LocalTime.of(11, 0)
                 ))
@@ -92,7 +92,7 @@ class TimeGridServiceTest {
                 .kind(EventKind.CLASS)
                 .title("Physics")
                 .weekday(DayOfWeek.MONDAY)
-                .recurringTimeRange(new TimeRange(
+                .recurringTimeRange(new LocalTimeRange(
                         LocalTime.of(10, 0),
                         LocalTime.of(12, 0)
                 ))
@@ -105,10 +105,10 @@ class TimeGridServiceTest {
 
         Block block = service.fixedEventToBlock(userId, event, slot);
 
-        assertThat(block.getKind()).isEqualTo(BlockKind.CLASS);
-        assertThat(block.getStartsAt()).isEqualTo(slot.start());
-        assertThat(block.getEndsAt()).isEqualTo(slot.end());
-        assertThat(block.getRef().getFixedEventId()).isEqualTo(event.getId());
+        assertThat(block.kind()).isEqualTo(BlockKind.CLASS);
+        assertThat(block.startsAt()).isEqualTo(slot.start());
+        assertThat(block.endsAt()).isEqualTo(slot.end());
+        assertThat(block.ref().getFixedEventId()).isEqualTo(event.getId());
     }
 
     @Test
@@ -119,7 +119,7 @@ class TimeGridServiceTest {
                 .kind(EventKind.CLASS)
                 .title("Math")
                 .weekday(DayOfWeek.MONDAY)
-                .recurringTimeRange(new TimeRange(
+                .recurringTimeRange(new LocalTimeRange(
                         LocalTime.of(9, 0),
                         LocalTime.of(11, 0)
                 ))
@@ -179,7 +179,7 @@ class TimeGridServiceTest {
                 .kind(EventKind.CLASS)
                 .title("Event")
                 .weekday(DayOfWeek.MONDAY)
-                .recurringTimeRange(new TimeRange(
+                .recurringTimeRange(new LocalTimeRange(
                         LocalTime.of(sh, sm),
                         LocalTime.of(eh, em)
                 ))

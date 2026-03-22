@@ -14,10 +14,13 @@ public class TelegramUser {
     private String statePayload;
 
     private TelegramUser(long telegramId, UUID userId, long chatId, ChatState state, String statePayload) {
+        if (telegramId < 0) throw new IllegalArgumentException("Telegram ID cannot be negative");
+        if (chatId < 0) throw new IllegalArgumentException("Telegram chat ID cannot be negative");
+
+        this.userId = Objects.requireNonNull(userId, "User ID cannot be null");
+        this.state = Objects.requireNonNull(state, "Chat state cannot be null");
         this.telegramId = telegramId;
-        this.userId = userId;
         this.chatId = chatId;
-        this.state = state;
         this.statePayload = statePayload;
     }
 

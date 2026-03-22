@@ -1,10 +1,8 @@
 package com.floppahost.adaptiveplanner.planner.domain.user;
 
-import lombok.With;
-
 import java.time.Duration;
 import java.time.LocalTime;
-
+import java.util.Objects;
 
 public record UserProfile(
         LocalTime wakeTime,
@@ -18,21 +16,27 @@ public record UserProfile(
         int focusMinutes,
         int breakMinutes,
 
-        @With
         int maxHeavyBlocksPerDay,
-
-        @With
         int maxTotalPlannedMinutesPerDay,
-
-        @With
         int weeklyStudyTargetMinutes,
 
         boolean strictEnforcement
 ) {
+    private static final LocalTime DEFAULT_WAKE_TIME = LocalTime.of(7, 0);
+    private static final LocalTime DEFAULT_SLEEP_TIME = LocalTime.of(23, 0);
+    private static final double DEFAULT_MIN_SLEEP_HOURS = 7.0;
+    private static final int DEFAULT_MORNING_ROUTINE_MINUTES = 60;
+    private static final int DEFAULT_EVENING_ROUTINE_MINUTES = 60;
+    private static final int DEFAULT_FOCUS_MINUTES = 40;
+    private static final int DEFAULT_BREAK_MINUTES = 10;
+    private static final int DEFAULT_MAX_HEAVY_BLOCKS = 3;
+    private static final int DEFAULT_MAX_TOTAL_PLANNED_MINUTES_PER_DAY = 8 * 60;
+    private static final int DEFAULT_WEEKLY_STUDY_TARGET_MINUTES = 10 * 60;
+    private static final boolean DEFAULT_STRICT_ENFORCEMENT = true;
 
     public UserProfile {
-        if (wakeTime == null) throw new IllegalArgumentException("wakeTime must not be null when creating UserProfile");
-        if (sleepTime == null) throw new IllegalArgumentException("sleepTime must not be null when creating UserProfile");
+        Objects.requireNonNull(wakeTime, "Wake time cannot be null");
+        Objects.requireNonNull(sleepTime, "Sleep time cannot be null");
 
         validateSleepWindow(wakeTime, sleepTime, minSleepHours);
         validateRoutines(wakeTime, sleepTime, morningRoutineMinutes, eveningRoutineMinutes);
@@ -44,74 +48,19 @@ public record UserProfile(
         );
     }
 
-
     public static UserProfile defaults() {
         return new UserProfile(
-                LocalTime.of(7, 0),
-                LocalTime.of(23, 0),
-                7.0,
-                60,
-                60,
-                40,
-                10,
-                3,
-                8 * 60,
-                10 * 60,
-                true
-        );
-    }
-
-    public UserProfile withSleepWindow(
-            LocalTime wakeTime,
-            LocalTime sleepTime,
-            double minSleepHours
-    ) {
-        return new UserProfile(
-                wakeTime,
-                sleepTime,
-                minSleepHours,
-                morningRoutineMinutes,
-                eveningRoutineMinutes,
-                focusMinutes,
-                breakMinutes,
-                maxHeavyBlocksPerDay,
-                maxTotalPlannedMinutesPerDay,
-                weeklyStudyTargetMinutes,
-                strictEnforcement
-        );
-    }
-
-    public UserProfile withFocusCycle(int focusMinutes, int breakMinutes) {
-        return new UserProfile(
-                wakeTime,
-                sleepTime,
-                minSleepHours,
-                morningRoutineMinutes,
-                eveningRoutineMinutes,
-                focusMinutes,
-                breakMinutes,
-                maxHeavyBlocksPerDay,
-                maxTotalPlannedMinutesPerDay,
-                weeklyStudyTargetMinutes,
-                strictEnforcement
-        );
-    }
-
-    public UserProfile withToggledStrictEnforcement() {
-        boolean newStrictEnforcement = !this.strictEnforcement;
-
-        return new UserProfile(
-                wakeTime,
-                sleepTime,
-                minSleepHours,
-                morningRoutineMinutes,
-                eveningRoutineMinutes,
-                focusMinutes,
-                breakMinutes,
-                maxHeavyBlocksPerDay,
-                maxTotalPlannedMinutesPerDay,
-                weeklyStudyTargetMinutes,
-                newStrictEnforcement
+                DEFAULT_WAKE_TIME,
+                DEFAULT_SLEEP_TIME,
+                DEFAULT_MIN_SLEEP_HOURS,
+                DEFAULT_MORNING_ROUTINE_MINUTES,
+                DEFAULT_EVENING_ROUTINE_MINUTES,
+                DEFAULT_FOCUS_MINUTES,
+                DEFAULT_BREAK_MINUTES,
+                DEFAULT_MAX_HEAVY_BLOCKS,
+                DEFAULT_MAX_TOTAL_PLANNED_MINUTES_PER_DAY,
+                DEFAULT_WEEKLY_STUDY_TARGET_MINUTES,
+                DEFAULT_STRICT_ENFORCEMENT
         );
     }
 
@@ -121,13 +70,13 @@ public record UserProfile(
             double minSleepHours
     ) {
         if (minSleepHours <= 0) {
-            throw new IllegalArgumentException("Minimum sleep hours must be greater than 0");
+            throw new IllegalArgumentException("Minimum sleep hours must be greater than zero");
         }
 
-        long sleepMinutes = calculateSleepDuration(sleepTime, wakeTime).toMinutes();
+        long sleepMinutes = calculateSleepDuration(wakeTime, sleepTime).toMinutes();
 
         if (sleepMinutes <= 0) {
-            throw new IllegalArgumentException("Sleep window must be greater than 0 minutes");
+            throw new IllegalArgumentException("Sleep window must be greater than zero minutes");
         }
 
         if (sleepMinutes < minSleepHours * 60) {
@@ -136,30 +85,29 @@ public record UserProfile(
     }
 
     private static void validateRoutines(
-            LocalTime sleepTime,
             LocalTime wakeTime,
+            LocalTime sleepTime,
             int morningRoutineMinutes,
             int eveningRoutineMinutes
     ) {
         if (morningRoutineMinutes < 0 || eveningRoutineMinutes < 0) {
-            throw new IllegalArgumentException("Routines can not be negative");
+            throw new IllegalArgumentException("Morning and evening routines cannot be negative");
         }
 
-        Duration sleepDuration = calculateSleepDuration(sleepTime, wakeTime);
+        Duration sleepDuration = calculateSleepDuration(wakeTime, sleepTime);
         Duration awakeDuration = Duration.ofDays(1).minus(sleepDuration);
 
         long awakeMinutes = awakeDuration.toMinutes();
         int allRoutinesMinutes = morningRoutineMinutes + eveningRoutineMinutes;
 
         if (allRoutinesMinutes >= awakeMinutes) {
-            throw new IllegalArgumentException("Morning and evening routines combined cannot exceed your total awake time");
+            throw new IllegalArgumentException("Morning and evening routines combined cannot exceed total awake time");
         }
     }
 
-    private static Duration calculateSleepDuration(LocalTime sleepTime, LocalTime wakeTime) {
+    private static Duration calculateSleepDuration(LocalTime wakeTime, LocalTime sleepTime) {
         Duration duration = Duration.between(sleepTime, wakeTime);
 
-        // If the duration is negative, the sleep period crossed midnight
         if (duration.isNegative()) {
             duration = duration.plusDays(1);
         }
@@ -169,10 +117,10 @@ public record UserProfile(
 
     private static void validateFocusCycle(int focusMinutes, int breakMinutes) {
         if (focusMinutes <= 0) {
-            throw new IllegalArgumentException("Focus minutes must be greater than 0");
+            throw new IllegalArgumentException("Focus minutes must be greater than zero");
         }
         if (breakMinutes < 0) {
-            throw new IllegalArgumentException("Break minutes must be non-negative");
+            throw new IllegalArgumentException("Break minutes cannot be negative");
         }
     }
 
@@ -181,14 +129,72 @@ public record UserProfile(
             int maxTotalPlannedMinutesPerDay,
             int weeklyStudyTargetMinutes
     ) {
-        if (maxHeavyBlocksPerDay <= 0) {
-            throw new IllegalArgumentException("Maximal number of Heavy Blocks per Day must be greater than 0");
+        if (maxHeavyBlocksPerDay < 0) {
+            throw new IllegalArgumentException("Maximum heavy blocks per day cannot be negative");
         }
-        if (maxTotalPlannedMinutesPerDay <= 0) {
-            throw new IllegalArgumentException("Maximum Total Planned Minutes per Day must be greater than 0");
+        if (maxTotalPlannedMinutesPerDay < 0) {
+            throw new IllegalArgumentException("Maximum total planned minutes per day cannot be negative");
         }
         if (weeklyStudyTargetMinutes < 0) {
-            throw new IllegalArgumentException("Weekly Study Target Minutes must be non-negative");
+            throw new IllegalArgumentException("Weekly study target minutes cannot be negative");
         }
+    }
+
+    public UserProfile withSleepWindow(
+            LocalTime wakeTime,
+            LocalTime sleepTime,
+            double minSleepHours
+    ) {
+        return new UserProfile(
+                wakeTime, sleepTime, minSleepHours, morningRoutineMinutes,
+                eveningRoutineMinutes, focusMinutes, breakMinutes,
+                maxHeavyBlocksPerDay, maxTotalPlannedMinutesPerDay,
+                weeklyStudyTargetMinutes, strictEnforcement
+        );
+    }
+
+    public UserProfile withFocusCycle(int focusMinutes, int breakMinutes) {
+        return new UserProfile(
+                wakeTime, sleepTime, minSleepHours, morningRoutineMinutes,
+                eveningRoutineMinutes, focusMinutes, breakMinutes,
+                maxHeavyBlocksPerDay, maxTotalPlannedMinutesPerDay,
+                weeklyStudyTargetMinutes, strictEnforcement
+        );
+    }
+
+    public UserProfile withMaxHeavyBlocksPerDay(int maxHeavyBlocksPerDay) {
+        return new UserProfile(
+                wakeTime, sleepTime, minSleepHours, morningRoutineMinutes,
+                eveningRoutineMinutes, focusMinutes, breakMinutes,
+                maxHeavyBlocksPerDay, maxTotalPlannedMinutesPerDay,
+                weeklyStudyTargetMinutes, strictEnforcement
+        );
+    }
+
+    public UserProfile withMaxTotalPlannedMinutesPerDay(int maxTotalPlannedMinutesPerDay) {
+        return new UserProfile(
+                wakeTime, sleepTime, minSleepHours, morningRoutineMinutes,
+                eveningRoutineMinutes, focusMinutes, breakMinutes,
+                maxHeavyBlocksPerDay, maxTotalPlannedMinutesPerDay,
+                weeklyStudyTargetMinutes, strictEnforcement
+        );
+    }
+
+    public UserProfile withWeeklyStudyTargetMinutes(int weeklyStudyTargetMinutes) {
+        return new UserProfile(
+                wakeTime, sleepTime, minSleepHours, morningRoutineMinutes,
+                eveningRoutineMinutes, focusMinutes, breakMinutes,
+                maxHeavyBlocksPerDay, maxTotalPlannedMinutesPerDay,
+                weeklyStudyTargetMinutes, strictEnforcement
+        );
+    }
+
+    public UserProfile withToggledStrictEnforcement() {
+        return new UserProfile(
+                wakeTime, sleepTime, minSleepHours, morningRoutineMinutes,
+                eveningRoutineMinutes, focusMinutes, breakMinutes,
+                maxHeavyBlocksPerDay, maxTotalPlannedMinutesPerDay,
+                weeklyStudyTargetMinutes, !this.strictEnforcement
+        );
     }
 }

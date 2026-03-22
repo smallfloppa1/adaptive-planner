@@ -9,7 +9,7 @@ import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
 import com.floppahost.adaptiveplanner.planner.domain.planning.DayPlan;
 import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.calendar.EventKind;
-import com.floppahost.adaptiveplanner.planner.domain.calendar.TimeRange;
+import com.floppahost.adaptiveplanner.planner.domain.shared.LocalTimeRange;
 import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -82,7 +82,7 @@ class PlanningEngineTest {
         assertThat(plan.getBlocks()).isNotEmpty();
 
         assertThat(plan.getBlocks())
-                .anyMatch(b -> b.getKind() == BlockKind.STUDY);
+                .anyMatch(b -> b.kind() == BlockKind.STUDY);
     }
 
     @Test
@@ -93,7 +93,7 @@ class PlanningEngineTest {
                 .kind(EventKind.CLASS)
                 .title("Math Class")
                 .weekday(DayOfWeek.MONDAY)
-                .recurringTimeRange(new TimeRange(
+                .recurringTimeRange(new LocalTimeRange(
                         LocalTime.of(9, 0),
                         LocalTime.of(11, 0)
                 ))
@@ -112,11 +112,11 @@ class PlanningEngineTest {
         assertThat(plan.getBlocks()).hasSizeGreaterThan(1);
 
         assertThat(plan.getBlocks())
-                .anyMatch(b -> b.getKind() == BlockKind.CLASS &&
-                        b.getTitle().equals("Math Class"));
+                .anyMatch(b -> b.kind() == BlockKind.CLASS &&
+                        b.title().equals("Math Class"));
 
         assertThat(plan.getBlocks())
-                .anyMatch(b -> b.getKind() == BlockKind.STUDY);
+                .anyMatch(b -> b.kind() == BlockKind.STUDY);
     }
 
     @Test
@@ -127,7 +127,7 @@ class PlanningEngineTest {
                 .kind(defaultEventKind)
                 .title("Meeting")
                 .weekday(DayOfWeek.MONDAY)
-                .recurringTimeRange(new TimeRange(
+                .recurringTimeRange(new LocalTimeRange(
                         LocalTime.of(14, 0),
                         LocalTime.of(15, 0)
                 ))
@@ -144,7 +144,7 @@ class PlanningEngineTest {
         DayPlan plan = planningEngine.generateDayPlan(inputs);
 
         List<LocalDateTime> startTimes = plan.getBlocks().stream()
-                .map(Block::getStartsAt)
+                .map(Block::startsAt)
                 .toList();
 
         for (int i = 0; i < startTimes.size() - 1; i++) {
@@ -190,7 +190,7 @@ class PlanningEngineTest {
         assertThat(plan.getBlocks()).hasSizeGreaterThanOrEqualTo(3);
 
         assertThat(plan.getBlocks())
-                .filteredOn(b -> b.getRef() != null && b.getRef().getFixedEventId() != null)
+                .filteredOn(b -> b.ref() != null && b.ref().getFixedEventId() != null)
                 .hasSize(3);
     }
 
@@ -220,10 +220,10 @@ class PlanningEngineTest {
 
         // Study blocks should not overlap fixed events
         assertThat(plan.getBlocks())
-                .filteredOn(b -> b.getKind() == BlockKind.STUDY)
+                .filteredOn(b -> b.kind() == BlockKind.STUDY)
                 .allMatch(b -> {
-                    boolean overlapsBusy1 = b.getStartsAt().isBefore(busy1End) && b.getEndsAt().isAfter(busy1Start);
-                    boolean overlapsBusy2 = b.getStartsAt().isBefore(busy2End) && b.getEndsAt().isAfter(busy2Start);
+                    boolean overlapsBusy1 = b.startsAt().isBefore(busy1End) && b.endsAt().isAfter(busy1Start);
+                    boolean overlapsBusy2 = b.startsAt().isBefore(busy2End) && b.endsAt().isAfter(busy2Start);
                     return !overlapsBusy1 && !overlapsBusy2;
                 });
 
@@ -232,8 +232,8 @@ class PlanningEngineTest {
         LocalDateTime windowEnd = LocalDateTime.of(monday, profile.sleepTime());
 
         assertThat(plan.getBlocks())
-                .filteredOn(b -> b.getKind() == BlockKind.STUDY)
-                .allMatch(b -> !b.getStartsAt().isBefore(windowStart) && !b.getEndsAt().isAfter(windowEnd));
+                .filteredOn(b -> b.kind() == BlockKind.STUDY)
+                .allMatch(b -> !b.startsAt().isBefore(windowStart) && !b.endsAt().isAfter(windowEnd));
     }
 
     @Test
@@ -251,7 +251,7 @@ class PlanningEngineTest {
 
         assertThat(plan).isNotNull();
         assertThat(plan.getBlocks())
-                .noneMatch(b -> b.getKind() == BlockKind.STUDY);
+                .noneMatch(b -> b.kind() == BlockKind.STUDY);
     }
 
     @Test
@@ -272,7 +272,7 @@ class PlanningEngineTest {
         DayPlan plan = planningEngine.generateDayPlan(inputs);
 
         assertThat(plan.getBlocks()).hasSize(1);
-        assertThat(plan.getBlocks().getFirst().getKind()).isEqualTo(BlockKind.OTHER);
+        assertThat(plan.getBlocks().getFirst().kind()).isEqualTo(BlockKind.OTHER);
     }
 
     @Test
@@ -291,9 +291,9 @@ class PlanningEngineTest {
         DayPlan plan = planningEngine.generateDayPlan(inputs);
 
         long heavyBlocks = plan.getBlocks().stream()
-                .filter(b -> b.getKind() == BlockKind.STUDY ||
-                        b.getKind() == BlockKind.TASK ||
-                        b.getKind() == BlockKind.PROGRAM)
+                .filter(b -> b.kind() == BlockKind.STUDY ||
+                        b.kind() == BlockKind.TASK ||
+                        b.kind() == BlockKind.PROGRAM)
                 .count();
 
         assertThat(heavyBlocks).isLessThanOrEqualTo(2);
@@ -352,7 +352,7 @@ class PlanningEngineTest {
                 .kind(EventKind.CLASS)
                 .title("Cancelled Class")
                 .weekday(DayOfWeek.MONDAY)
-                .recurringTimeRange(new TimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0)))
+                .recurringTimeRange(new LocalTimeRange(LocalTime.of(10, 0), LocalTime.of(12, 0)))
                 .active(false)
                 .build();
 
@@ -367,7 +367,7 @@ class PlanningEngineTest {
         DayPlan plan = planningEngine.generateDayPlan(inputs);
 
         assertThat(plan.getBlocks())
-                .noneMatch(b -> b.getTitle().equals("Cancelled Class"));
+                .noneMatch(b -> b.title().equals("Cancelled Class"));
     }
 
     @Test
@@ -401,7 +401,7 @@ class PlanningEngineTest {
                 .kind(defaultEventKind)
                 .title(title)
                 .weekday(weekday)
-                .recurringTimeRange(new TimeRange(
+                .recurringTimeRange(new LocalTimeRange(
                         LocalTime.of(startHour, startMinute),
                         LocalTime.of(endHour, endMinute)
                 ))

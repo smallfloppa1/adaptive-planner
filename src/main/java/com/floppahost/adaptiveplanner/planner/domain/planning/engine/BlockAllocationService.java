@@ -1,10 +1,10 @@
 package com.floppahost.adaptiveplanner.planner.domain.planning.engine;
 
-
 import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
-import com.floppahost.adaptiveplanner.planner.domain.planning.BlockRef;
 import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
+import com.floppahost.adaptiveplanner.planner.domain.planning.BlockRef;
 import com.floppahost.adaptiveplanner.planner.domain.planning.Slot;
+import com.floppahost.adaptiveplanner.planner.domain.shared.LocalDateTimeRange;
 import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 
 import java.time.Duration;
@@ -14,10 +14,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Allocates study and break blocks into available time slots.
- * Respects user profile constraints for heavy blocks and flexible minutes.
- */
 public class BlockAllocationService {
 
     private static final Set<BlockKind> FLEX_KINDS = Set.of(
@@ -33,25 +29,13 @@ public class BlockAllocationService {
         BlockKind.PROGRAM
     );
 
-    /**
-     * Allocate study blocks and break blocks in free slots.
-     * Constraints enforced:
-     * - profile.maxHeavyBlocksPerDay (counts STUDY blocks)
-     * - profile.maxTotalPlannedMinutesPerDay (counts flexible blocks only)
-     * 
-     * @param userId User ID
-     * @param profile User profile with constraints
-     * @param freeSlots Available time slots
-     * @param targetStudyMinutes Desired study minutes
-     * @param subjectId Optional subject ID for study blocks
-     * @return Allocation result with blocks and metrics
-     */
     public AllocationResult allocateStudyBlocks(
             UUID userId,
             UserProfile profile,
             List<Slot> freeSlots,
             int targetStudyMinutes,
-            UUID subjectId) {
+            UUID subjectId
+    ) {
         
         List<Block> blocks = new ArrayList<>();
         int usedFlexMinutes = 0;
@@ -81,17 +65,16 @@ public class BlockAllocationService {
 
                 // Create study block
                 BlockRef ref = subjectId != null 
-                    ? BlockRef.builder().subjectId(subjectId).build()
-                    : BlockRef.empty();
+                    ? new BlockRef.ForSubject(subjectId)
+                    : new BlockRef.Empty();
 
-                blocks.add(Block.builder()
-                    .userId(userId)
-                    .kind(BlockKind.STUDY)
-                    .title("Study")
-                    .startsAt(cursor)
-                    .endsAt(focusEnd)
-                    .ref(ref)
-                    .build());
+                blocks.add(Block.create(
+                        userId,
+                        BlockKind.STUDY,
+                        "Study",
+                        LocalDateTimeRange.of(cursor, focusEnd),
+                        ref
+                ));
 
                 usedFlexMinutes += focusMinutes;
                 heavyBlocksUsed++;
@@ -109,14 +92,13 @@ public class BlockAllocationService {
                         break;
                     }
 
-                    blocks.add(Block.builder()
-                        .userId(userId)
-                        .kind(BlockKind.BREAK)
-                        .title("Break")
-                        .startsAt(cursor)
-                        .endsAt(breakEnd)
-                        .ref(BlockRef.empty())
-                        .build());
+                    blocks.add(Block.create(
+                            userId,
+                            BlockKind.BREAK,
+                            "Break",
+                            LocalDateTimeRange.of(cursor, breakEnd),
+                            new BlockRef.Empty()
+                    ));
 
                     usedFlexMinutes += breakMinutes;
                     cursor = breakEnd;

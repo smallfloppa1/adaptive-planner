@@ -1,27 +1,44 @@
 package com.floppahost.adaptiveplanner.planner.domain.planning;
 
-import lombok.Builder;
-import lombok.Value;
-import lombok.With;
-
+import java.util.Objects;
 import java.util.UUID;
 
 /**
  * Reference to the thing a Block represents.
  * Keep refs optional because different BlockKind uses different refs.
  */
-@Value
-@Builder
-@With
-public class BlockRef {
-    UUID fixedEventId;
-    UUID subjectId;
-    UUID examId;
-    UUID taskId;
-    UUID programId;
-    UUID programItemId;
+public sealed interface BlockRef {
 
-    public static BlockRef empty() {
-        return BlockRef.builder().build();
+    record Empty() implements BlockRef {}
+
+    record ForEvent(UUID eventId) implements BlockRef {
+        public ForEvent {
+            Objects.requireNonNull(eventId, "Event ID cannot be null");
+        }
+    }
+
+    record ForSubject(UUID subjectId) implements BlockRef {
+        public ForSubject {
+            Objects.requireNonNull(subjectId, "Subject ID cannot be null");
+        }
+    }
+
+    record ForExam(UUID examId) implements BlockRef {
+        public ForExam {
+            Objects.requireNonNull(examId, "Exam ID cannot be null");
+        }
+    }
+
+    record ForTask(UUID taskId) implements BlockRef {
+        public ForTask {
+            Objects.requireNonNull(taskId, "Task ID cannot be null");
+        }
+    }
+
+    record ForProgram(UUID programId, UUID programItemId) implements BlockRef {
+        public ForProgram {
+            Objects.requireNonNull(programId, "Program ID cannot be null");
+            Objects.requireNonNull(programItemId, "Program Item ID cannot be null");
+        }
     }
 }

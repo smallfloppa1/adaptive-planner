@@ -16,14 +16,6 @@ import java.util.UUID;
  */
 public class PressureService {
 
-    /**
-     * Calculate pressure for a single exam.
-     * Past exams return 0.0 pressure.
-     * 
-     * @param today Current date
-     * @param exam The exam to calculate pressure for
-     * @return Pressure value (0.0 or positive)
-     */
     public double calculateExamPressure(LocalDate today, Exam exam) {
         LocalDate examDate = exam.getStartsAt().toLocalDate();
         
@@ -39,10 +31,6 @@ public class PressureService {
     /**
      * Build a map of subject pressure values by aggregating exam pressures.
      * Only includes upcoming exams with positive pressure.
-     * 
-     * @param today Current date
-     * @param exams List of exams to consider
-     * @return Map of subject ID to total pressure
      */
     public Map<UUID, Double> buildSubjectPressure(LocalDate today, List<Exam> exams) {
         Map<UUID, Double> pressures = new HashMap<>();

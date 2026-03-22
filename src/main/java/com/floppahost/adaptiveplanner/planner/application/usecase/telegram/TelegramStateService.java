@@ -6,7 +6,7 @@ import com.floppahost.adaptiveplanner.planner.application.port.outbound.calendar
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegram.SaveTelegramUserPort;
 import com.floppahost.adaptiveplanner.planner.domain.calendar.EventKind;
 import com.floppahost.adaptiveplanner.planner.domain.calendar.RecurringEvent;
-import com.floppahost.adaptiveplanner.planner.domain.calendar.TimeRange;
+import com.floppahost.adaptiveplanner.planner.domain.shared.LocalTimeRange;
 import com.floppahost.adaptiveplanner.planner.domain.telegram.ChatState;
 import com.floppahost.adaptiveplanner.planner.domain.telegram.TelegramUser;
 import com.floppahost.adaptiveplanner.planner.domain.user.User;
@@ -65,7 +65,7 @@ public class TelegramStateService {
         LocalTime startTime = LocalTime.parse(data[3]);
 
         RecurringEvent event = RecurringEvent.create(user.getId(), name, kind);
-        event.addBlock(day, TimeRange.of(startTime, endTime));
+        event.addBlock(day, LocalTimeRange.of(startTime, endTime));
 
         saveRecurringEventPort.save(event);
         tgUser.reset();

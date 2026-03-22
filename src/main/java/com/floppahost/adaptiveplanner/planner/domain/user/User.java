@@ -1,7 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.domain.user;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.LocalTime;
 import java.util.Objects;
@@ -16,9 +15,9 @@ public final class User {
     private UserProfile profile;
 
     private User(UUID id, Email email, UserProfile profile) {
-        this.id = Objects.requireNonNull(id, "id");
+        this.id = Objects.requireNonNull(id, "User ID can not be null");
         this.email = email;
-        this.profile = Objects.requireNonNull(profile, "profile");
+        this.profile = Objects.requireNonNull(profile, "User profile can not be null");
     }
 
     public static User rehydrate(UUID id, Email email, UserProfile profile) {
@@ -26,10 +25,13 @@ public final class User {
     }
 
     public static User registerNew(Email email) {
+        UUID newUserId = UUID.randomUUID();
+        UserProfile defaultUserProfile = UserProfile.defaults();
+
         return new User(
-                UUID.randomUUID(),
+                newUserId,
                 email,
-                UserProfile.defaults()
+                defaultUserProfile
         );
     }
 
@@ -37,8 +39,8 @@ public final class User {
         return registerNew(null);
     }
 
-    public void changeEmail(Email newEmail) {
-        this.email = Objects.requireNonNull(newEmail, "New email cannot be null");
+    public void updateEmail(Email newEmail) {
+        this.email = Objects.requireNonNull(newEmail, "Email can not be null");
     }
 
     public void clearEmail() {

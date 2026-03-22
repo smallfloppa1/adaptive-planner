@@ -3,30 +3,20 @@ package com.floppahost.adaptiveplanner.planner.application.usecase;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.HandleTelegramUpdate;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.IncomingUpdate;
 import com.floppahost.adaptiveplanner.planner.application.port.inbound.handletelegramupdate.dto.OutgoingResponse;
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.calendar.recurringevent.SaveRecurringEventPort;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegram.LoadTelegramUserPort;
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.telegram.SaveTelegramUserPort;
 import com.floppahost.adaptiveplanner.planner.application.usecase.telegram.TelegramMenuService;
 import com.floppahost.adaptiveplanner.planner.application.usecase.telegram.TelegramRegistrationService;
 import com.floppahost.adaptiveplanner.planner.application.usecase.telegram.TelegramSettingsService;
 import com.floppahost.adaptiveplanner.planner.application.usecase.telegram.TelegramStateService;
-import com.floppahost.adaptiveplanner.planner.domain.calendar.RecurringEvent;
 import com.floppahost.adaptiveplanner.planner.domain.telegram.ChatState;
 import com.floppahost.adaptiveplanner.planner.application.port.outbound.user.LoadUserPort;
-import com.floppahost.adaptiveplanner.planner.application.port.outbound.user.SaveUserPort;
 import com.floppahost.adaptiveplanner.planner.domain.telegram.TelegramUser;
 import com.floppahost.adaptiveplanner.planner.domain.user.User;
-import com.floppahost.adaptiveplanner.planner.domain.calendar.EventKind;
-import com.floppahost.adaptiveplanner.planner.domain.calendar.TimeRange;
-import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 import com.floppahost.adaptiveplanner.planner.presentation.telegrambot.routing.BotRoute;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.LocalTime;
-import java.util.Locale;
 import java.util.Optional;
 
 @Slf4j

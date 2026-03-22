@@ -2,9 +2,9 @@ package com.floppahost.adaptiveplanner.planner.domain.planning.engine;
 
 
 import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
-import com.floppahost.adaptiveplanner.planner.domain.planning.DayPlan;
 import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.planning.BlockStatus;
+import com.floppahost.adaptiveplanner.planner.domain.planning.DayPlan;
 import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 
 import java.time.DayOfWeek;
@@ -15,10 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Handles redistribution of missed study time across the week.
- * Implements Strategy C for deficit recovery.
- */
 public class RedistributionService {
 
     private final PlanningEngine planningEngine;
@@ -41,27 +37,11 @@ public class RedistributionService {
         return total;
     }
 
-    /**
-     * Redistribute week study minutes across remaining days.
-     * Strategy C (MVP correct):
-     * - Compute COMPLETED study minutes from week start up to yesterday
-     * - Calculate deficit = weekly_target - completed
-     * - Distribute deficit across remaining days evenly, capped by daily limits
-     * - Generate full timeline day plans for remaining days
-     * 
-     * @param userId User ID
-     * @param profile User profile
-     * @param today Current date
-     * @param fixedEventsByDay Map of date to fixed events
-     * @param existingPlansByDay Map of date to existing plans
-     * @param weeklyTargetMinutes Weekly study target
-     * @return Redistribution result with updated plans
-     */
     public RedistributionResult redistributeWeekStudyMinutes(
             UUID userId,
             UserProfile profile,
             LocalDate today,
-            Map<LocalDate, List<FixedEvent>> fixedEventsByDay,
+            Map<LocalDate, List<DailyCommitment>> commitmentsByDay,
             Map<LocalDate, DayPlan> existingPlansByDay,
             int weeklyTargetMinutes
     ) {
@@ -110,7 +90,7 @@ public class RedistributionService {
                     userId,
                     profile,
                     day,
-                    fixedEventsByDay.getOrDefault(day, List.of()),
+                    commitmentsByDay.getOrDefault(day, List.of()),
                     targetForDay
             );
 

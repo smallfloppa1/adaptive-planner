@@ -9,13 +9,16 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface UserProfileMapper {
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     UserProfileEntity toEntity(UserProfile profile);
 
+
     UserProfile toDomain(UserProfileEntity entity);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)

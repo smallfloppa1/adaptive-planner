@@ -71,9 +71,9 @@ class BlockAllocationServiceTest {
         // Verify alternating pattern
         List<Block> blocks = result.blocks();
         for (int i = 0; i < blocks.size(); i += 2) {
-            assertThat(blocks.get(i).getKind()).isEqualTo(BlockKind.STUDY);
+            assertThat(blocks.get(i).kind()).isEqualTo(BlockKind.STUDY);
             if (i + 1 < blocks.size()) {
-                assertThat(blocks.get(i + 1).getKind()).isEqualTo(BlockKind.BREAK);
+                assertThat(blocks.get(i + 1).kind()).isEqualTo(BlockKind.BREAK);
             }
         }
     }
@@ -97,7 +97,7 @@ class BlockAllocationServiceTest {
         assertThat(result.heavyBlocksUsed()).isEqualTo(2);
         
         long studyBlocks = result.blocks().stream()
-            .filter(b -> b.getKind() == BlockKind.STUDY)
+            .filter(b -> b.kind() == BlockKind.STUDY)
             .count();
         assertThat(studyBlocks).isEqualTo(2);
     }
@@ -141,7 +141,7 @@ class BlockAllocationServiceTest {
         
         // Verify blocks span across time gaps
         List<LocalDateTime> startTimes = result.blocks().stream()
-            .map(Block::getStartsAt)
+            .map(Block::startsAt)
             .sorted()
             .toList();
         
@@ -182,7 +182,7 @@ class BlockAllocationServiceTest {
 
         // Then - Should allocate study block but no break
         assertThat(result.blocks()).hasSize(1);
-        assertThat(result.blocks().getFirst().getKind()).isEqualTo(BlockKind.STUDY);
+        assertThat(result.blocks().getFirst().kind()).isEqualTo(BlockKind.STUDY);
         assertThat(result.usedFlexibleMinutes()).isEqualTo(40);
     }
 
@@ -201,11 +201,11 @@ class BlockAllocationServiceTest {
 
         // Then
         List<Block> studyBlocks = result.blocks().stream()
-            .filter(b -> b.getKind() == BlockKind.STUDY)
+            .filter(b -> b.kind() == BlockKind.STUDY)
             .toList();
 
         assertThat(studyBlocks).isNotEmpty();
-        assertThat(studyBlocks.getFirst().getRef().getSubjectId()).isEqualTo(subjectId);
+        assertThat(studyBlocks.getFirst().ref().getSubjectId()).isEqualTo(subjectId);
     }
 
     @Test
@@ -223,11 +223,11 @@ class BlockAllocationServiceTest {
 
         // Then
         List<Block> studyBlocks = result.blocks().stream()
-            .filter(b -> b.getKind() == BlockKind.STUDY)
+            .filter(b -> b.kind() == BlockKind.STUDY)
             .toList();
 
         assertThat(studyBlocks).isNotEmpty();
-        assertThat(studyBlocks.getFirst().getRef().getSubjectId()).isNull();
+        assertThat(studyBlocks.getFirst().ref().getSubjectId()).isNull();
     }
 
     @Test
@@ -248,7 +248,7 @@ class BlockAllocationServiceTest {
         );
 
         // Then - Should only have study blocks, no breaks
-        assertThat(result.blocks()).allMatch(b -> b.getKind() == BlockKind.STUDY);
+        assertThat(result.blocks()).allMatch(b -> b.kind() == BlockKind.STUDY);
         assertThat(result.blocks()).hasSize(2); // Two 40-min blocks
     }
 
@@ -335,7 +335,7 @@ class BlockAllocationServiceTest {
         );
 
         // Then
-        assertThat(result.blocks()).allMatch(b -> b.getUserId().equals(userId));
+        assertThat(result.blocks()).allMatch(b -> b.userId().equals(userId));
     }
 
     @Test
@@ -356,8 +356,8 @@ class BlockAllocationServiceTest {
         for (int i = 0; i < blocks.size() - 1; i++) {
             Block current = blocks.get(i);
             Block next = blocks.get(i + 1);
-            assertThat(current.getEndsAt())
-                .isBeforeOrEqualTo(next.getStartsAt());
+            assertThat(current.endsAt())
+                .isBeforeOrEqualTo(next.startsAt());
         }
     }
 
@@ -375,8 +375,8 @@ class BlockAllocationServiceTest {
 
         // Then - All blocks should be within slot
         assertThat(result.blocks()).allMatch(block ->
-            !block.getStartsAt().isBefore(slot.start()) &&
-            !block.getEndsAt().isAfter(slot.end())
+            !block.startsAt().isBefore(slot.start()) &&
+            !block.endsAt().isAfter(slot.end())
         );
     }
 

@@ -1,127 +1,72 @@
 package com.floppahost.adaptiveplanner.planner.domain.planning.engine;
 
-import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
-import com.floppahost.adaptiveplanner.planner.domain.planning.BlockRef;
-import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.calendar.EventKind;
+import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
+import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
+import com.floppahost.adaptiveplanner.planner.domain.planning.BlockRef;
 import com.floppahost.adaptiveplanner.planner.domain.planning.Slot;
 import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
 
 public class TimeGridService {
 
-    /**
-     * Build the day window (wake time to sleep time) for a given day.
-     */
-    public Slot buildDayWindow(UserProfile profile, LocalDate day) {
-        LocalDateTime start = LocalDateTime.of(day, profile.wakeTime());
-        LocalDateTime end = LocalDateTime.of(day, profile.sleepTime());
-        return new Slot(start, end);
-    }
-
-    /**
-     * Expand fixed events to concrete slots for a specific day.
-     * Returns pairs of (event, slot).
-     */
-    public List<Map.Entry<FixedEvent, Slot>> expandFixedEventsForDay(
-            UserProfile profile,
-            LocalDate day,
-            List<FixedEvent> fixedEvents
-    ) {
-        DayOfWeek targetWeekday = day.getDayOfWeek();
-        List<Map.Entry<FixedEvent, Slot>> result = new ArrayList<>();
-
-        for (FixedEvent event : fixedEvents) {
-            if (!event.isActive()) {
-                continue;
-            }
-
-            if (event.getOneTimeRange() != null) {
-                LocalDate eventDate = event.getOneTimeRange().getStartDateTime().toLocalDate();
-                if (eventDate.equals(day)) {
-                    Slot slot = new Slot(
-                            event.getOneTimeRange().getStartDateTime(),
-                            event.getOneTimeRange().getEndDateTime()
-                    );
-                    result.add(Map.entry(event, slot));
-                }
-                continue;
-            }
-
-            // Recurring weekly event
-            if (event.getRecurringWeekday() == targetWeekday && event.getRecurringTimeRange() != null) {
-                LocalDateTime start = LocalDateTime.of(day, event.getRecurringTimeRange().getStartTime());
-                LocalDateTime end = LocalDateTime.of(day, event.getRecurringTimeRange().getEndTime());
-                result.add(Map.entry(event, new Slot(start, end)));
-            }
-        }
-
-        // Sort by start time
-        result.sort(Comparator.comparing(e -> e.getValue().start()));
-        return result;
-    }
-
-    /**
-     * Convert fixed event to a Block.
-     */
-    public Block fixedEventToBlock(UUID userId, FixedEvent event, Slot slot) {
-        BlockKind blockKind = mapFixedEventKindToBlockKind(event.getKind());
-
-        return Block.builder()
-                .userId(userId)
-                .kind(blockKind)
-                .title(event.getTitle())
-                .startsAt(slot.start())
-                .endsAt(slot.end())
-                .ref(BlockRef.builder().fixedEventId(event.getId()).build())
-                .build();
-    }
-
-    /**
-     * Map FixedEventKind to BlockKind.
-     */
-    private BlockKind mapFixedEventKindToBlockKind(EventKind kind) {
-        return switch (kind) {
-            case CLASS -> BlockKind.CLASS;
-            case MEETING -> BlockKind.TASK;
-            case MEAL -> BlockKind.MEAL;
-            //case EXERCISE, COMMUTE, PERSONAL, OTHER -> BlockKind.OTHER;
-            case OTHER -> BlockKind.OTHER;
-        };
-    }
-
-    /**
-     * Compute day slots and fixed blocks for a given day.
-     * Returns day window, fixed blocks, and free slots.
-     */
     public TimeGridResult computeDaySlotsAndFixedBlocks(
             UUID userId,
             UserProfile profile,
             LocalDate day,
-            List<FixedEvent> fixedEvents
+            List<DailyCommitment> commitments
     ) {
         Slot window = buildDayWindow(profile, day);
 
-        List<Map.Entry<FixedEvent, Slot>> expanded =
-                expandFixedEventsForDay(profile, day, fixedEvents);
+        List<Block> fixedBlocks = new ArrayList<>();
+        List<Slot> busySlots = new ArrayList<>();
 
-        List<Block> fixedBlocks = expanded.stream()
-                .map(entry -> fixedEventToBlock(userId, entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        for (DailyCommitment commitment : commitments) {
+            // 1. Translate TimeRange into exact LocalDateTime Slots
+            LocalDateTime start = LocalDateTime.of(day, commitment.dateTimeRange().getStart());
+            LocalDateTime end = LocalDateTime.of(day, commitment.dateTimeRange().getEnd());
+            Slot slot = new Slot(start, end);
 
-        List<Slot> busySlots = expanded.stream()
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toList());
+            busySlots.add(slot);
+            fixedBlocks.add(commitmentToBlock(userId, commitment, slot));
+        }
 
         List<Slot> mergedBusySlots = mergeIntervals(busySlots);
         List<Slot> freeSlots = subtractSlots(window, mergedBusySlots);
 
         return new TimeGridResult(window, fixedBlocks, freeSlots);
+    }
+
+    private Slot buildDayWindow(UserProfile profile, LocalDate day) {
+        LocalDateTime start = LocalDateTime.of(day, profile.wakeTime());
+        LocalDateTime end = LocalDateTime.of(day, profile.sleepTime());
+        return new Slot(start, end);
+    }
+
+    private Block commitmentToBlock(UUID userId, DailyCommitment commitment, Slot slot) {
+        return Block.builder()
+                .userId(userId)
+                .kind(mapEventKindToBlockKind(commitment.kind()))
+                .title(commitment.title())
+                .startsAt(slot.start())
+                .endsAt(slot.end())
+                .ref(new BlockRef.ForEvent(commitment.eventId()))
+                .build();
+    }
+
+    private BlockKind mapEventKindToBlockKind(EventKind kind) {
+        return switch (kind) {
+            case CLASS -> BlockKind.CLASS;
+            case WORK -> BlockKind.WORK;
+            // ... map your other EventKinds to BlockKinds here ...
+            default -> BlockKind.OTHER;
+        };
     }
 
     /**

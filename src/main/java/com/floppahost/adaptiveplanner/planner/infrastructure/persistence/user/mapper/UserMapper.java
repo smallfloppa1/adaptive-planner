@@ -50,6 +50,6 @@ public abstract class UserMapper {
     }
 
     protected Email map(String email) {
-        return email == null ? null : Email.of(email);
+        return email == null ? null : new Email(email);
     }
 }

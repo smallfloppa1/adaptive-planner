@@ -1,5 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.domain.user;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 
@@ -11,19 +12,17 @@ public record Email(
     );
 
     public Email {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Email: cannot be null or blank");
+        Objects.requireNonNull(value, "Email value cannot be null");
+
+        if (value.isBlank()) {
+            throw new IllegalArgumentException("Email value cannot be blank");
         }
 
         String trimmed = value.trim();
         if (!EMAIL_PATTERN.matcher(trimmed).matches()) {
-            throw new IllegalArgumentException("Email: invalid format");
+            throw new IllegalArgumentException("Invalid email format");
         }
 
         value = trimmed.toLowerCase();
-    }
-
-    public static Email of(String value) {
-        return new Email(value);
     }
 }
