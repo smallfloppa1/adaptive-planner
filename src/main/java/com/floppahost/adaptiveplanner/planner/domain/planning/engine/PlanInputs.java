@@ -9,7 +9,7 @@ import java.util.UUID;
 public record PlanInputs(
         UUID userId,
         UserProfile profile,
-        LocalDate day,
+        LocalDate date,
         List<DailyCommitment> commitments,
         int targetStudyMinutes
 ) {

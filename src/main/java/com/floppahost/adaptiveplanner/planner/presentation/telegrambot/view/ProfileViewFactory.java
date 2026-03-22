@@ -61,8 +61,8 @@ public class ProfileViewFactory {
                 
                 <b>🧠 Cognitive Limits:</b>
                 ⏱️ <b>Study Blocks:</b> %dm focus / %dm break
-                🔋 <b>Deep Work Cap:</b> Max %d heavy blocks/day
-                ⏳ <b>Max Daily Load:</b> %d mins/day
+                🔋 <b>Deep Work Cap:</b> Max %d heavy blocks/date
+                ⏳ <b>Max Daily Load:</b> %d mins/date
                 
                 <b>🎯 Goals & Rules:</b>
                 📈 <b>Weekly Target:</b> %d mins/week
@@ -233,7 +233,7 @@ public class ProfileViewFactory {
     }
 
     private EditMessageText buildHeavyCapMenu(Long chatId, Integer messageId) {
-        String text = "🔋 <b>Heavy Block Cap</b>\nSelect maximum heavy (Priority 1) blocks per day:";
+        String text = "🔋 <b>Heavy Block Cap</b>\nSelect maximum heavy (Priority 1) blocks per date:";
         InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
                 .keyboardRow(new InlineKeyboardRow(
                         button("2", BotRoute.PREFIX_SET_HEAVY_CAP.getPayload() + "2"),
@@ -254,7 +254,7 @@ public class ProfileViewFactory {
     }
 
     private EditMessageText buildMaxDailyMenu(Long chatId, Integer messageId) {
-        String text = "⏳ <b>Max Daily Load</b>\nSelect maximum minutes the bot can schedule per day:";
+        String text = "⏳ <b>Max Daily Load</b>\nSelect maximum minutes the bot can schedule per date:";
         InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder()
                 .keyboardRow(new InlineKeyboardRow(
                         button("2 Hours (120m)", BotRoute.PREFIX_SET_DAILY_LOAD.getPayload() + "120"),

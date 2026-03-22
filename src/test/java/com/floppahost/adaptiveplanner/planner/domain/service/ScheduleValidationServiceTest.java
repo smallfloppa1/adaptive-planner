@@ -47,7 +47,7 @@ class ScheduleValidationServiceTest {
     }
 
     @Test
-    @DisplayName("Should validate a valid day plan")
+    @DisplayName("Should validate a valid date plan")
     void shouldValidateValidDayPlan() {
         // Given
         List<Block> blocks = List.of(
@@ -175,7 +175,7 @@ class ScheduleValidationServiceTest {
         // When/Then
         assertThatThrownBy(() -> validator.validateDayPlan(profile, plan))
             .isInstanceOf(PlanValidationException.class)
-            .hasMessage("Exceeded max heavy blocks per day.");
+            .hasMessage("Exceeded max heavy blocks per date.");
     }
 
     @Test
@@ -198,7 +198,7 @@ class ScheduleValidationServiceTest {
         // When/Then
         assertThatThrownBy(() -> validator.validateDayPlan(profile, plan))
             .isInstanceOf(PlanValidationException.class)
-            .hasMessage("Exceeded max flexible planned minutes per day.");
+            .hasMessage("Exceeded max flexible planned minutes per date.");
     }
 
     @Test

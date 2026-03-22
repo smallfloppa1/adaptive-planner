@@ -49,7 +49,7 @@ class TimeGridServiceTest {
     }
 
     @Test
-    @DisplayName("Should build correct day window")
+    @DisplayName("Should build correct date window")
     void shouldBuildDayWindow() {
         Slot window = service.buildDayWindow(profile, monday);
 

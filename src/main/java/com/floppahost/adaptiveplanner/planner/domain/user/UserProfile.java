@@ -130,10 +130,10 @@ public record UserProfile(
             int weeklyStudyTargetMinutes
     ) {
         if (maxHeavyBlocksPerDay < 0) {
-            throw new IllegalArgumentException("Maximum heavy blocks per day cannot be negative");
+            throw new IllegalArgumentException("Maximum heavy blocks per date cannot be negative");
         }
         if (maxTotalPlannedMinutesPerDay < 0) {
-            throw new IllegalArgumentException("Maximum total planned minutes per day cannot be negative");
+            throw new IllegalArgumentException("Maximum total planned minutes per date cannot be negative");
         }
         if (weeklyStudyTargetMinutes < 0) {
             throw new IllegalArgumentException("Weekly study target minutes cannot be negative");

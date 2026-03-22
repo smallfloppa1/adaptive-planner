@@ -64,11 +64,11 @@ public class TelegramStateService {
         DayOfWeek day = DayOfWeek.valueOf(data[2]);
         LocalTime startTime = LocalTime.parse(data[3]);
 
-        RecurringEvent event = RecurringEvent.create(user.getId(), name, kind);
+        RecurringEvent event = RecurringEvent.create(user.getId(), kind, name);
         event.addBlock(day, LocalTimeRange.of(startTime, endTime));
 
         saveRecurringEventPort.save(event);
-        tgUser.reset();
+        tgUser.resetState();
         saveTelegramUserPort.save(tgUser);
 
         return new OutgoingResponse(input.chatId(), "VIEW_ADD_FIXED_EVENTS", user, null);

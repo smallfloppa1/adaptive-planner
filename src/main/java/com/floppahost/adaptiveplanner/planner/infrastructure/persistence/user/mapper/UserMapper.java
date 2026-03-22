@@ -8,13 +8,14 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
-@RequiredArgsConstructor
 @Mapper(componentModel = "spring", uses = {UserProfileMapper.class})
 public abstract class UserMapper {
 
-    private final UserProfileMapper profileMapper;
+    @Autowired
+    protected UserProfileMapper profileMapper;
 
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)

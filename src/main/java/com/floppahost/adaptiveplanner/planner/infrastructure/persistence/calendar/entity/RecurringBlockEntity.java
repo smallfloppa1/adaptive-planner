@@ -1,7 +1,6 @@
 package com.floppahost.adaptiveplanner.planner.infrastructure.persistence.calendar.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,8 +12,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
 @Table(name = "recurring_blocks")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RecurringBlockEntity {
 
     @Id
@@ -30,8 +29,8 @@ public class RecurringBlockEntity {
     private DayOfWeek dayOfWeek;
 
     @Column(nullable = false)
-    private LocalTime startTime;
+    private LocalTime startsAt;
 
     @Column(nullable = false)
-    private LocalTime endTime;
+    private LocalTime endsAt;
 }

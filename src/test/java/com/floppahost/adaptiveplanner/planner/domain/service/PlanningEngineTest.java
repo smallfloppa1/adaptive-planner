@@ -64,7 +64,7 @@ class PlanningEngineTest {
     }
 
     @Test
-    @DisplayName("Should generate valid day plan with no fixed events")
+    @DisplayName("Should generate valid date plan with no fixed events")
     void shouldGeneratePlanWithNoFixedEvents() {
         PlanInputs inputs = new PlanInputs(
                 userId,
@@ -255,7 +255,7 @@ class PlanningEngineTest {
     }
 
     @Test
-    @DisplayName("Should handle day completely filled with fixed events")
+    @DisplayName("Should handle date completely filled with fixed events")
     void shouldHandleDayFullOfFixedEvents() {
         List<FixedEvent> events = List.of(
                 createRecurringEvent(DayOfWeek.MONDAY, "All Day Event", 7, 0, 23, 0)

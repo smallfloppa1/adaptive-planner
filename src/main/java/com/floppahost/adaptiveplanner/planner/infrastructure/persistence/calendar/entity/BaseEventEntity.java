@@ -13,9 +13,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
 @Table(name = "base_events")
 @Inheritance(strategy = InheritanceType.JOINED)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class BaseEventEntity extends AuditableEntity {
 
     @Id
@@ -34,7 +34,5 @@ public abstract class BaseEventEntity extends AuditableEntity {
 
     private String location;
 
-    @Column(columnDefinition = "TEXT")
-    private String notes;
 }
 

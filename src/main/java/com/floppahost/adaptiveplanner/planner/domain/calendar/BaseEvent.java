@@ -14,9 +14,19 @@ public abstract class BaseEvent {
 
     private String title;
     private String location;
-    private String notes;
 
-    protected BaseEvent(UUID id, UUID userId, String title, EventKind kind) {
+    protected BaseEvent(UUID id, UUID userId, EventKind kind, String title, String location) {
+
+        validateTitle(title);
+
+        this.id = Objects.requireNonNull(id, "Event ID cannot be null");
+        this.userId = Objects.requireNonNull(userId, "User ID cannot be null");
+        this.kind = Objects.requireNonNull(kind, "Event kind cannot be null");
+        this.title = title;
+        this.location = location;
+    }
+
+    protected BaseEvent(UUID id, UUID userId, EventKind kind, String title) {
 
         validateTitle(title);
 
@@ -34,10 +44,6 @@ public abstract class BaseEvent {
 
     public void updateLocation(String location) {
         this.location = location;
-    }
-
-    public void updateNotes(String notes) {
-        this.notes = notes;
     }
 
     private void validateTitle(String title) {

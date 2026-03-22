@@ -24,11 +24,11 @@ public class RedistributionService {
     }
 
     /**
-     * Calculate completed study minutes from a day plan.
+     * Calculate completed study minutes from a date plan.
      */
     private int getCompletedStudyMinutes(DayPlan plan) {
         int total = 0;
-        for (Block block : plan.getBlocks()) {
+        for (Block block : plan.blocks()) {
             if (block.getKind() == BlockKind.STUDY &&
                 block.getStatus() == BlockStatus.DONE) {
                 total += block.getPlannedMinutes();
@@ -112,7 +112,7 @@ public class RedistributionService {
             DayPlan plan = plans.get(d);
             if (plan == null) continue;
 
-            for (Block block : plan.getBlocks()) {
+            for (Block block : plan.blocks()) {
                 if (block.getKind() == BlockKind.STUDY &&
                         block.getStatus() == BlockStatus.DONE) {
                     total += block.getPlannedMinutes();

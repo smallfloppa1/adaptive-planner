@@ -15,8 +15,8 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
 @Table(name = "recurring_events")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RecurringEventEntity extends BaseEventEntity {
 
     @OneToMany(

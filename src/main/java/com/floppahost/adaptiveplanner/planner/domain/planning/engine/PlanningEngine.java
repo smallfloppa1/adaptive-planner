@@ -28,7 +28,7 @@ public class PlanningEngine {
         TimeGridResult gridResult = timeGridService.computeDaySlotsAndFixedBlocks(
                 inputs.userId(),
                 inputs.profile(),
-                inputs.day(),
+                inputs.date(),
                 inputs.commitments()
         );
 
@@ -45,11 +45,11 @@ public class PlanningEngine {
         allBlocks.addAll(allocation.blocks());
         allBlocks.sort(Comparator.comparing(b -> b.getTimeRange().getStart()));
 
-        DayPlan plan = DayPlan.builder()
-                .userId(inputs.userId())
-                .day(inputs.day())
-                .blocks(allBlocks)
-                .build();
+        DayPlan plan = new DayPlan(
+                inputs.userId(),
+                inputs.date(),
+                allBlocks
+        );
 
         validationService.validateDayPlan(inputs.profile(), plan);
 

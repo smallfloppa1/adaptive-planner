@@ -5,6 +5,7 @@ import com.floppahost.adaptiveplanner.planner.domain.planning.Block;
 import com.floppahost.adaptiveplanner.planner.domain.planning.BlockKind;
 import com.floppahost.adaptiveplanner.planner.domain.planning.BlockRef;
 import com.floppahost.adaptiveplanner.planner.domain.planning.Slot;
+import com.floppahost.adaptiveplanner.planner.domain.shared.LocalDateTimeRange;
 import com.floppahost.adaptiveplanner.planner.domain.user.UserProfile;
 
 import java.time.LocalDate;
@@ -50,14 +51,14 @@ public class TimeGridService {
     }
 
     private Block commitmentToBlock(UUID userId, DailyCommitment commitment, Slot slot) {
-        return Block.builder()
-                .userId(userId)
-                .kind(mapEventKindToBlockKind(commitment.kind()))
-                .title(commitment.title())
-                .startsAt(slot.start())
-                .endsAt(slot.end())
-                .ref(new BlockRef.ForEvent(commitment.eventId()))
-                .build();
+
+        return Block.create(
+                userId,
+                mapEventKindToBlockKind(commitment.kind()),
+                commitment.title(),
+                LocalDateTimeRange.of(slot.start(), slot.end()),
+                new BlockRef.ForEvent(commitment.eventId())
+        );
     }
 
     private BlockKind mapEventKindToBlockKind(EventKind kind) {

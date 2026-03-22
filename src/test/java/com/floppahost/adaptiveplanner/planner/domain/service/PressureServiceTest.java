@@ -35,7 +35,7 @@ class PressureServiceTest {
     }
 
     @Test
-    @DisplayName("Should calculate pressure for exam in 1 day")
+    @DisplayName("Should calculate pressure for exam in 1 date")
     void shouldCalculatePressureForExamInOneDay() {
         // Given
         Exam exam = createExam(mathSubjectId, today.plusDays(1), LocalTime.of(8, 30), 5, 5);
@@ -173,7 +173,7 @@ class PressureServiceTest {
     }
 
     @Test
-    @DisplayName("Should calculate pressure correctly for exam on same day in future")
+    @DisplayName("Should calculate pressure correctly for exam on same date in future")
     void shouldCalculatePressureForSameDayFutureExam() {
         // Given - Exam is today (0 days left)
         Exam examToday = createExam(mathSubjectId, today, LocalTime.of(8, 30), 5, 5);

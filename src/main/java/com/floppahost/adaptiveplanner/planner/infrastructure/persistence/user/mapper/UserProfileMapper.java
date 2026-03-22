@@ -16,6 +16,9 @@ public interface UserProfileMapper {
     UserProfileEntity toEntity(UserProfile profile);
 
 
+    @Mapping(target = "withMaxHeavyBlocksPerDay", ignore = true)
+    @Mapping(target = "withMaxTotalPlannedMinutesPerDay", ignore = true)
+    @Mapping(target = "withWeeklyStudyTargetMinutes", ignore = true)
     UserProfile toDomain(UserProfileEntity entity);
 
     @Mapping(target = "id", ignore = true)

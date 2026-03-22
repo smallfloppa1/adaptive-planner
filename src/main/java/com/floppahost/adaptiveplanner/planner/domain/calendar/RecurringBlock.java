@@ -7,11 +7,11 @@ import java.util.Objects;
 
 public record RecurringBlock(
         DayOfWeek dayOfWeek,
-        LocalTimeRange dateTimeRange
+        LocalTimeRange timeRange
 ) {
 
     public RecurringBlock {
         Objects.requireNonNull(dayOfWeek, "Day of the week cannot be null");
-        Objects.requireNonNull(dateTimeRange, "Time range cannot be null");
+        Objects.requireNonNull(timeRange, "Time range cannot be null");
     }
 }

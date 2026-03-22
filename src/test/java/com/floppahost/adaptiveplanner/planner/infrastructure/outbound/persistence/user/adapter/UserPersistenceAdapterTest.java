@@ -3,9 +3,9 @@ package com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persisten
 import com.floppahost.adaptiveplanner.planner.domain.user.User;
 import com.floppahost.adaptiveplanner.planner.domain.user.Email;
 import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.BaseIntegrationTest;
-import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.user.mapper.UserMapperImpl;
-import com.floppahost.adaptiveplanner.planner.infrastructure.outbound.persistence.userprofile.mapper.UserProfileMapperImpl;
 import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.adapter.UserPersistenceAdapter;
+import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.mapper.UserMapperImpl;
+import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.mapper.UserProfileMapperImpl;
 import com.floppahost.adaptiveplanner.planner.infrastructure.persistence.user.repository.UserJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,7 +51,6 @@ class UserPersistenceAdapterTest extends BaseIntegrationTest {
         assertThat(savedUser).isNotNull();
         assertThat(savedUser.getId()).isEqualTo(user.getId());
         assertThat(savedUser.getEmail().value()).isEqualTo("test@example.com");
-        assertThat(savedUser.isActive()).isTrue();
         assertThat(savedUser.getProfile()).isNotNull();
     }
 

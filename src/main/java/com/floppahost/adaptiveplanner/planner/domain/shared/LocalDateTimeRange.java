@@ -2,7 +2,6 @@ package com.floppahost.adaptiveplanner.planner.domain.shared;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Objects;
 
 public final class LocalDateTimeRange implements TemporalRange<LocalDateTime> {

@@ -49,7 +49,7 @@ public class TelegramUser {
         this.statePayload = payload;
     }
 
-    public void reset() {
+    public void resetState() {
         this.state = ChatState.IDLE;
         this.statePayload = null;
     }

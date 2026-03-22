@@ -137,16 +137,16 @@ class RedistributionServiceTest {
         );
 
         verify(mockEngine).generateDayPlan(argThat(inputs ->
-                inputs.targetStudyMinutes() == 63 && inputs.day().equals(thursday)
+                inputs.targetStudyMinutes() == 63 && inputs.date().equals(thursday)
         ));
         verify(mockEngine).generateDayPlan(argThat(inputs ->
-                inputs.targetStudyMinutes() == 63 && inputs.day().equals(thursday.plusDays(1))
+                inputs.targetStudyMinutes() == 63 && inputs.date().equals(thursday.plusDays(1))
         ));
         verify(mockEngine).generateDayPlan(argThat(inputs ->
-                inputs.targetStudyMinutes() == 62 && inputs.day().equals(thursday.plusDays(2))
+                inputs.targetStudyMinutes() == 62 && inputs.date().equals(thursday.plusDays(2))
         ));
         verify(mockEngine).generateDayPlan(argThat(inputs ->
-                inputs.targetStudyMinutes() == 62 && inputs.day().equals(thursday.plusDays(3))
+                inputs.targetStudyMinutes() == 62 && inputs.date().equals(thursday.plusDays(3))
         ));
     }
 
@@ -308,13 +308,13 @@ class RedistributionServiceTest {
         verify(mockEngine, times(5)).generateDayPlan(any());
 
         verify(mockEngine).generateDayPlan(argThat(inputs ->
-                inputs.day().equals(wednesday)
+                inputs.date().equals(wednesday)
         ));
         verify(mockEngine).generateDayPlan(argThat(inputs ->
-                inputs.day().equals(wednesday.plusDays(1))
+                inputs.date().equals(wednesday.plusDays(1))
         ));
         verify(mockEngine).generateDayPlan(argThat(inputs ->
-                inputs.day().equals(wednesday.plusDays(4)) // Sunday
+                inputs.date().equals(wednesday.plusDays(4)) // Sunday
         ));
     }
 
@@ -368,7 +368,7 @@ class RedistributionServiceTest {
         );
 
         verify(mockEngine).generateDayPlan(argThat(inputs ->
-                inputs.day().equals(thursday) &&
+                inputs.date().equals(thursday) &&
                         inputs.fixedEvents().contains(event)
         ));
     }
